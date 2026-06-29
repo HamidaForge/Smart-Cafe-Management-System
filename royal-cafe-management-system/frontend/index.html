@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart Cafe — Management System</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--mint:#a8d5ba;--mint-light:#d4efe0;--mint-pale:#edf7f1;--mint-deep:#6bbf8e;--mint-dark:#3a8c5e;--pink:#f4a7b9;--pink-light:#fce4ec;--pink-pale:#fff0f4;--pink-deep:#e97fa0;--pink-dark:#b5526e;--gold:#d4a843;--gold-light:#f5e6c3;--cream:#faf6f0;--white:#fff;--text-dark:#2d2016;--text-mid:#5a3e2b;--text-soft:#8a6f5c;--text-light:#b8a49a;--border:rgba(168,213,186,0.35);--shadow:0 4px 24px rgba(107,191,142,0.12);--radius:16px;--radius-sm:10px;--serif:'Playfair Display',serif;--sans:'DM Sans',sans-serif;--script:'Dancing Script',cursive}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--cream);color:var(--text-dark);min-height:100vh}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--mint-pale)}::-webkit-scrollbar-thumb{background:var(--mint);border-radius:10px}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+background:linear-gradient(135deg,#d4efe0 0%,#fce4ec 50%,#d4efe0 100%);background-size:400% 400%;animation:bgS 8s ease infinite;position:relative;overflow:hidden}
+@keyframes bgS{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.fl{position:absolute;pointer-events:none;font-size:80px;opacity:0.12;animation:flt 6s ease-in-out infinite}
+.f1{top:5%;left:5%}.f2{top:10%;right:8%;font-size:60px;animation-delay:1.5s}.f3{bottom:8%;left:10%;font-size:50px;animation-delay:3s}
+.f4{bottom:5%;right:5%;animation-delay:4.5s}.f5{top:45%;left:2%;font-size:40px;animation-delay:2s}.f6{top:40%;right:2%;font-size:45px;animation-delay:3.5s}
+@keyframes flt{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-20px) rotate(5deg)}}
+.lcard{background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);border-radius:32px;padding:48px 42px;width:100%;max-width:480px;
+border:1.5px solid rgba(168,213,186,0.4);box-shadow:0 20px 60px rgba(107,191,142,0.15);animation:cIn 0.8s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes cIn{from{opacity:0;transform:translateY(30px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.llogo{text-align:center;margin-bottom:26px}
+.llogo .bird{font-size:48px;display:block;margin-bottom:6px;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.llogo h1{font-family:var(--script);font-size:34px;color:var(--mint-dark)}
+.llogo p{font-size:11px;color:var(--text-soft);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.rbtn{padding:13px 10px;border:1.5px solid var(--border);background:var(--white);border-radius:var(--radius-sm);cursor:pointer;text-align:center;transition:all 0.3s;font-family:var(--sans)}
+.rbtn:hover{border-color:var(--mint);background:var(--mint-pale)}.rbtn.sel{border-color:var(--mint-deep);background:var(--mint-light)}
+.ricon{font-size:20px;display:block;margin-bottom:3px}.rname{font-size:12px;font-weight:600;color:var(--text-mid)}.rsub{font-size:10px;color:var(--text-soft)}
+.fg{margin-bottom:13px}
+.fc{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--sans);font-size:13px;color:var(--text-dark);background:var(--white);outline:none;transition:all 0.3s}
+.fc:focus{border-color:var(--mint-deep);box-shadow:0 0 0 4px rgba(107,191,142,0.12)}.fc option{background:var(--white)}
+.lbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--mint-dark),var(--mint-deep));color:white;border:none;border-radius:var(--radius-sm);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s;margin-top:4px}
+.lbtn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(58,140,94,0.3)}
+.fl-lbl{font-size:11px;font-weight:600;color:var(--text-soft);letter-spacing:0.5px;text-transform:uppercase;display:block;margin-bottom:5px}
+
+/* APP */
+#app{display:none;min-height:100vh}
+.app-wrap{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:250px;height:100vh;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;box-shadow:4px 0 24px rgba(107,191,142,0.08);overflow:hidden}
+.sb-logo{padding:22px 20px 14px;border-bottom:1px solid var(--border)}
+.sb-logo h2{font-family:var(--script);font-size:24px;color:var(--mint-dark)}
+.sb-logo p{font-size:10px;color:var(--text-soft);letter-spacing:1.5px;text-transform:uppercase}
+.sb-user{padding:13px 18px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--border)}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.av-admin{background:var(--mint-light)}.av-manager{background:var(--gold-light)}.av-waiter{background:#e8f4fd}.av-kitchen{background:#fef3cd}.av-customer{background:var(--pink-light)}
+.sb-nm{font-size:13px;font-weight:600;color:var(--text-dark)}
+.sb-badge{font-size:10px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;padding:2px 7px;border-radius:20px;display:inline-block;margin-top:2px}
+.rb-admin{background:var(--mint-light);color:var(--mint-dark)}.rb-manager{background:var(--gold-light);color:#8b6914}.rb-waiter{background:#e8f4fd;color:#1a6fa0}.rb-kitchen{background:#fef3cd;color:#7d5a00}.rb-customer{background:var(--pink-light);color:var(--pink-dark)}
+.nav-menu{flex:1;padding:12px 8px;overflow-y:auto;min-height:0}
+.nav-sec{font-size:10px;font-weight:700;color:var(--text-light);letter-spacing:1.5px;text-transform:uppercase;padding:0 10px;margin:10px 0 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:10px;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.25s;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:2px}
+.nav-item:hover{background:var(--mint-pale);color:var(--mint-dark)}.nav-item.active{background:var(--mint-light);color:var(--mint-dark);font-weight:600}
+.nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sb-bot{padding:13px 8px;border-top:1px solid var(--border)}
+.logout-btn{display:flex;align-items:center;gap:9px;padding:10px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-soft);font-size:13px;font-weight:500;transition:all 0.25s;background:none;border:none;font-family:var(--sans);width:100%}
+.logout-btn:hover{background:var(--pink-light);color:var(--pink-dark)}
+
+/* AI RECOMMENDATION */
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:14px}
+.rec-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:all 0.25s;position:relative}
+.rec-card:hover{transform:translateY(-3px);border-color:var(--mint-deep)}
+.rec-badge{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,var(--mint-dark),var(--mint-deep));color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:0.5px}
+.rec-icon{font-size:32px;margin-bottom:8px}
+.rec-name{font-family:var(--serif);font-size:14px;font-weight:600;color:var(--text-dark);margin-bottom:3px}
+.rec-why{font-size:11px;color:var(--text-soft);margin-bottom:8px}
+.rec-price{font-size:16px;font-weight:700;color:var(--mint-dark)}
+.also-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.also-tag{background:var(--mint-pale);border:1px solid var(--mint-light);color:var(--mint-dark);font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600}
+/* QR ORDERING */
+.qr-table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:14px}
+.qr-tcard{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;cursor:pointer;transition:all 0.25s;box-shadow:var(--shadow)}
+.qr-tcard:hover{border-color:var(--mint-deep);transform:translateY(-3px)}
+.qr-tcard.available{border-color:var(--mint)}
+.qr-tcard.occupied{border-color:var(--gold)}
+.qr-canvas{border:3px solid var(--mint-pale);border-radius:10px;padding:6px;background:#fff;margin:10px auto}
+.qr-modal-inner{text-align:center;padding:10px}
+/* LIVE KITCHEN */
+.kd-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
+.kd-col{background:var(--white);border-radius:var(--radius);padding:14px;min-height:400px;box-shadow:var(--shadow)}
+.kd-col-hdr{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:12px;text-align:center}
+.kd-pending .kd-col-hdr{background:#fff3e0;color:#e65100}
+.kd-prep .kd-col-hdr{background:#fff8e1;color:#f57f17}
+.kd-ready .kd-col-hdr{background:var(--mint-pale);color:var(--mint-dark)}
+.kd-done .kd-col-hdr{background:#f3e5f5;color:#7b1fa2}
+.kd-ticket{background:var(--cream);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:10px;position:relative}
+.kd-ticket-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.kd-ord-num{font-family:var(--serif);font-size:14px;font-weight:600;color:var(--text-dark)}
+.kd-timer{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--mint-light);color:var(--mint-dark)}
+.kd-timer.warn{background:var(--gold-light);color:#8b6914}
+.kd-timer.hot{background:var(--pink-light);color:var(--pink-dark)}
+.kd-items{list-style:none;font-size:12px;margin-bottom:8px}
+.kd-items li{padding:3px 0;border-bottom:1px solid var(--border);color:var(--text-mid);display:flex;justify-content:space-between}
+.kd-btn-row{display:flex;gap:6px;flex-wrap:wrap}
+/* AI SALES PREDICTION */
+.pred-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.pred-card{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.pred-title{font-family:var(--serif);font-size:16px;font-weight:600;margin-bottom:14px;color:var(--text-dark)}
+.peak-bar{height:36px;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.peak-label{font-size:11px;color:var(--text-soft);width:70px;flex-shrink:0}
+.peak-track{flex:1;background:var(--cream);border-radius:6px;height:18px;overflow:hidden}
+.peak-fill{height:100%;border-radius:6px;transition:width 0.8s;background:linear-gradient(90deg,var(--mint-deep),var(--mint-dark))}
+.peak-fill.hot{background:linear-gradient(90deg,var(--gold),#e65100)}
+.peak-val{font-size:11px;font-weight:700;color:var(--mint-dark);width:45px;text-align:right}
+.best-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.best-rank{width:22px;height:22px;border-radius:50%;background:var(--mint-light);color:var(--mint-dark);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.best-name{flex:1;font-size:13px;font-weight:500;color:var(--text-dark)}
+.best-pred{font-size:12px;font-weight:700;color:var(--mint-dark)}
+.trend-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;margin:4px}
+.trend-up{background:var(--mint-pale);color:var(--mint-dark)}
+.trend-dn{background:var(--pink-pale);color:var(--pink-dark)}
+/* VOICE ORDERING */
+.voice-wrap{display:flex;flex-direction:column;align-items:center;padding:30px 20px}
+.mic-btn{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--mint-dark),var(--mint-deep));border:none;cursor:pointer;font-size:48px;box-shadow:0 8px 32px rgba(58,140,94,0.4);transition:all 0.3s;display:flex;align-items:center;justify-content:center}
+.mic-btn:hover{transform:scale(1.05);box-shadow:0 12px 40px rgba(58,140,94,0.5)}
+.mic-btn.listening{background:linear-gradient(135deg,var(--pink-dark),var(--pink-deep));animation:pulse-ring 1.2s ease-out infinite;box-shadow:0 8px 32px rgba(181,82,110,0.5)}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(181,82,110,0.4)}70%{box-shadow:0 0 0 25px rgba(181,82,110,0)}100%{box-shadow:0 0 0 0 rgba(181,82,110,0)}}
+.voice-transcript{background:var(--white);border:2px dashed var(--mint);border-radius:var(--radius);padding:20px;min-height:80px;width:100%;max-width:500px;margin:20px 0;font-size:15px;color:var(--text-dark);text-align:center;transition:all 0.3s}
+.voice-items{width:100%;max-width:500px}
+.voice-item-row{display:flex;align-items:center;gap:10px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px}
+.vi-icon{font-size:22px}
+.vi-name{flex:1;font-weight:600;font-size:14px}
+.vi-qty{background:var(--mint-light);color:var(--mint-dark);font-weight:700;padding:3px 10px;border-radius:20px;font-size:13px}
+/* MAIN */
+.main-wrap{margin-left:250px;flex:1;display:flex;flex-direction:column;min-height:100vh;background:var(--cream)}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(107,191,142,0.06)}
+.topbar-title{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--text-dark)}
+.topbar-sub{font-size:12px;color:var(--text-soft);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:11px}
+.hidden{display:none!important}.show-flex{display:flex!important}
+.cart-topbtn{display:flex;align-items:center;gap:7px;background:var(--mint-pale);border:1.5px solid var(--mint);color:var(--mint-dark);padding:7px 13px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;transition:all 0.25s}
+.cart-topbtn:hover{background:var(--mint-light)}
+.cart-badge{background:var(--mint-dark);color:white;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* PAGES */
+.page{display:none;padding:24px 26px;flex:1}.page.active{display:block}
+
+/* FLORAL HEADER */
+.fhdr{background:linear-gradient(135deg,var(--mint-pale),var(--pink-pale));border-radius:var(--radius);padding:20px 24px;margin-bottom:20px;position:relative;overflow:hidden;border:1px solid var(--border)}
+.fhdr::after{content:'🌸🌿🌹';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:26px;opacity:0.4;letter-spacing:4px}
+.fhdr-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text-dark)}
+.fhdr-sub{font-size:12px;color:var(--text-soft);margin-top:3px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px;margin-bottom:20px}
+.scard{background:var(--white);border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:all 0.3s}
+.scard:hover{transform:translateY(-2px)}
+.scard::before{content:'';position:absolute;top:0;right:0;width:65px;height:65px;border-radius:50%;transform:translate(20px,-20px);opacity:0.12}
+.sc-m::before{background:var(--mint-deep)}.sc-p::before{background:var(--pink-deep)}.sc-g::before{background:var(--gold)}.sc-b::before{background:#5ba3d9}
+.sicon{font-size:24px;margin-bottom:7px}
+.sval{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--text-dark);line-height:1;margin-bottom:3px}
+.slbl{font-size:11px;color:var(--text-soft);font-weight:500}
+
+/* CARD */
+.card{background:var(--white);border-radius:var(--radius);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:16px}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--text-dark)}
+.card-sub{font-size:11px;color:var(--text-soft);margin-top:2px}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:var(--mint-pale);color:var(--mint-dark);font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;padding:10px 13px;text-align:left}
+td{padding:11px 13px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-mid)}
+tr:last-child td{border-bottom:none}tr:hover td{background:var(--mint-pale)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.b-pending{background:var(--pink-light);color:var(--pink-dark)}.b-confirmed{background:#e8f4fd;color:#1a6fa0}
+.b-preparing{background:#fef3cd;color:#7d5a00}.b-ready{background:var(--mint-light);color:var(--mint-dark)}
+.b-served{background:#e8f8e8;color:#2e7d2e}.b-completed{background:var(--mint-light);color:var(--mint-dark)}
+.b-cancelled{background:var(--pink-light);color:var(--pink-dark)}.b-available{background:var(--mint-light);color:var(--mint-dark)}
+.b-occupied{background:var(--pink-light);color:var(--pink-dark)}.b-veg{background:var(--mint-light);color:var(--mint-dark)}.b-nonveg{background:var(--pink-light);color:var(--pink-dark)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;transition:all 0.25s}
+.btn-mint{background:var(--mint-dark);color:white}.btn-mint:hover{background:#2d7a4f;transform:translateY(-1px)}
+.btn-pink{background:var(--pink-dark);color:white}.btn-pink:hover{background:#9a3f58}
+.btn-gold{background:var(--gold);color:white}.btn-gold:hover{background:#b8922e}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text-mid)}.btn-outline:hover{border-color:var(--mint);background:var(--mint-pale)}
+.btn-danger{background:#e84c6e;color:white}.btn-sm{padding:5px 12px;font-size:11px}
+
+/* MENU CARDS */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:13px}
+.mcard{background:var(--white);border-radius:var(--radius);padding:13px;border:1.5px solid var(--border);text-align:center;transition:all 0.3s;cursor:pointer}
+.mcard:hover{border-color:var(--mint-deep);transform:translateY(-3px);box-shadow:var(--shadow)}
+.memoji{font-size:36px;display:block;margin-bottom:5px}
+.mname{font-size:12px;font-weight:600;color:var(--text-dark);margin-bottom:3px}
+.mprice{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--mint-dark)}
+.mcat{font-size:10px;color:var(--text-soft);background:var(--cream);padding:2px 7px;border-radius:10px;display:inline-block;margin-top:3px}
+
+/* TABLES MAP */
+.tmap{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;padding:16px;background:var(--cream);border-radius:var(--radius);border:1px solid var(--border)}
+.ctable{aspect-ratio:1;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:10px;font-weight:600;transition:all 0.3s;border:2px solid;gap:3px}
+.ctable.available{background:var(--mint-pale);border-color:var(--mint);color:var(--mint-dark)}
+.ctable.occupied{background:var(--pink-pale);border-color:var(--pink);color:var(--pink-dark)}
+.ctable.reserved{background:var(--gold-light);border-color:var(--gold);color:#8b6914}
+.ctable:hover{transform:scale(1.05)}
+
+/* TRACKING */
+.tbar{display:flex;align-items:flex-start;margin:13px 0}
+.tstep{flex:1;text-align:center;position:relative}
+.tstep::before{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--border);z-index:0}
+.tstep:last-child::before{display:none}
+.tdot{width:28px;height:28px;border-radius:50%;background:var(--cream);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;margin:0 auto 5px;position:relative;z-index:1;transition:all 0.3s}
+.tstep.done .tdot{background:var(--mint-light);border-color:var(--mint-deep)}.tstep.done::before{background:var(--mint-deep)}
+.tstep.cur .tdot{background:var(--mint-deep);border-color:var(--mint-dark);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(107,191,142,0.4)}50%{box-shadow:0 0 0 8px rgba(107,191,142,0)}}
+.tlbl{font-size:9px;color:var(--text-soft);font-weight:600}
+.tstep.done .tlbl,.tstep.cur .tlbl{color:var(--mint-dark)}
+
+/* CART */
+.cart-ov{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:200;display:none}.cart-ov.open{display:block}
+.cart-sb{position:fixed;top:0;right:-390px;bottom:0;width:370px;background:var(--white);border-left:1px solid var(--border);z-index:201;display:flex;flex-direction:column;transition:right 0.3s;box-shadow:-4px 0 24px rgba(107,191,142,0.1)}
+.cart-sb.open{right:0}
+.cart-hdr{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cart-htitle{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--text-dark)}
+.cart-x{cursor:pointer;color:var(--text-soft);font-size:20px}
+.cart-list{flex:1;overflow-y:auto;padding:13px 16px}
+.citem{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border)}
+.cemoji{font-size:22px;width:32px;text-align:center;flex-shrink:0}
+.cinfo{flex:1;font-size:12px}.cnm{color:var(--text-dark);font-weight:600;margin-bottom:2px}.cpr{color:var(--mint-dark);font-weight:700}
+.qctrl{display:flex;align-items:center;gap:5px}
+.qbtn{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--mint);background:white;cursor:pointer;font-size:13px;font-weight:700;color:var(--mint-dark);display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.qbtn:hover{background:var(--mint-light)}.qn{font-size:12px;font-weight:700;min-width:16px;text-align:center}
+.cart-ftr{padding:15px 16px;border-top:1px solid var(--border)}
+.crow{display:flex;justify-content:space-between;font-size:12px;color:var(--text-soft);margin-bottom:4px}
+.cgrand{font-family:var(--serif);font-size:19px;font-weight:700;color:var(--mint-dark);text-align:right;margin:7px 0 13px}
+
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}.mov.open{display:flex}
+.modal{background:var(--white);border-radius:24px;padding:30px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;animation:mIn 0.35s cubic-bezier(0.34,1.56,0.64,1)}
+.modal-lg{max-width:780px}
+@keyframes mIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+.mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:13px;border-bottom:1px solid var(--border)}
+.mtitle{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--text-dark)}
+.mx{cursor:pointer;color:var(--text-soft);font-size:19px}.mx:hover{color:var(--text-dark)}
+.mftr{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:13px;border-top:1px solid var(--border)}
+
+/* KITCHEN */
+.kcard{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:16px;position:relative}
+.kcard.new-ord::before,.kcard.prep::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0}
+.kcard.new-ord::before{background:var(--mint-deep)}.kcard.prep::before{background:linear-gradient(90deg,var(--pink-deep),var(--gold))}
+.knum{font-family:var(--serif);font-size:17px;font-weight:700}
+.kitems{list-style:none;margin:9px 0}
+.kitem{padding:6px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;font-size:12px;color:var(--text-mid)}
+.kitem:last-child{border-bottom:none}
+
+/* PAY METHODS */
+.pmethods{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.pmethod{padding:13px;border-radius:var(--radius-sm);border:2px solid var(--border);cursor:pointer;text-align:center;transition:all 0.25s;background:var(--white)}
+.pmethod:hover{border-color:var(--mint);background:var(--mint-pale)}.pmethod.sel{border-color:var(--mint-deep);background:var(--mint-light)}
+.picon{font-size:24px;margin-bottom:3px}.pname{font-size:11px;font-weight:600;color:var(--text-dark)}
+
+/* STARS */
+.star-row{display:flex;gap:5px;margin:7px 0}
+.star{font-size:24px;cursor:pointer;color:var(--text-light);transition:all 0.2s}.star.on{color:#f5a623}.star:hover{transform:scale(1.2)}
+
+/* TOAST */
+#toasts{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{background:var(--white);border-radius:var(--radius-sm);padding:11px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;min-width:220px;animation:tIn 0.4s cubic-bezier(0.34,1.56,0.64,1);border-left:4px solid}
+.toast.success{border-left-color:var(--mint-deep)}.toast.error{border-left-color:var(--pink-dark)}.toast.info{border-left-color:#5ba3d9}
+@keyframes tIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+
+/* MISC */
+.gdiv{height:1px;background:linear-gradient(90deg,transparent,var(--mint),transparent);margin:14px 0}
+.empty{text-align:center;padding:44px 20px;color:var(--text-soft)}.empty-icon{font-size:40px;opacity:0.35;margin-bottom:8px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.chart-box{position:relative;height:230px}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint-deep);animation:blink 1s infinite;margin-right:4px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* CUSTOMER TABS */
+.ctabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.ctab{padding:11px 18px;font-size:12px;color:var(--text-soft);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.25s;white-space:nowrap;font-family:var(--sans);font-weight:500}
+.ctab:hover{color:var(--mint-dark)}.ctab.active{color:var(--mint-dark);border-bottom-color:var(--mint-dark)}
+.csec{display:none}.csec.active{display:block}
+.cmgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+
+/* QTY CTRL IN ORDER SUMMARY */
+.qs-ctrl{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px}
+.qs-btn{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--mint);background:white;cursor:pointer;font-size:14px;font-weight:700;color:var(--mint-dark);display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.qs-btn:hover{background:var(--mint-light)}.qs-num{font-size:13px;font-weight:700;min-width:18px;text-align:center}
+
+@media(max-width:768px){.sidebar{display:none}.main-wrap{margin-left:0}.page{padding:14px}.frow{grid-template-columns:1fr}.g2,.g3{grid-template-columns:1fr}.cart-sb{width:100%;right:-100%}.tmap{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="fl f1">🌸</div><div class="fl f2">🌿</div><div class="fl f3">🌹</div>
+  <div class="fl f4">🌺</div><div class="fl f5">🍃</div><div class="fl f6">🌷</div>
+  <div class="lcard">
+    <div class="llogo"><span class="bird">☕</span><h1>Smart Cafe</h1><p>Management System</p></div>
+    <div class="role-grid">
+      <button class="rbtn sel" onclick="setRole('admin',this)"><span class="ricon">👑</span><div class="rname">Admin</div><div class="rsub">Full control</div></button>
+      <button class="rbtn" onclick="setRole('manager',this)"><span class="ricon">📊</span><div class="rname">Manager</div><div class="rsub">Operations</div></button>
+      <button class="rbtn" onclick="setRole('waiter',this)"><span class="ricon">🍽️</span><div class="rname">Waiter</div><div class="rsub">Orders & tables</div></button>
+      <button class="rbtn" onclick="setRole('kitchen',this)"><span class="ricon">👨‍🍳</span><div class="rname">Kitchen</div><div class="rsub">Food prep</div></button>
+      <button class="rbtn" style="grid-column:span 2" onclick="setRole('customer',this)"><span class="ricon">🌸</span><div class="rname">Customer</div><div class="rsub">Order & track your food</div></button>
+    </div>
+    <div id="lf-area">
+      <div class="fg"><label class="fl-lbl">Email</label><input type="email" class="fc" id="l-email" value="admin@royalcafe.com"/></div>
+      <div class="fg"><label class="fl-lbl">Password</label><input type="password" class="fc" id="l-pass" value="admin123"/></div>
+      <button class="lbtn" onclick="doLogin()">✨ Sign In</button>
+    </div>
+    <div id="reg-lnk" style="display:none;text-align:center;margin-top:11px;font-size:12px;color:var(--text-soft)">
+      New here? <span style="color:var(--mint-dark);font-weight:600;cursor:pointer" onclick="showReg()">Create Account</span>
+    </div>
+    <div id="reg-area" style="display:none">
+      <div class="gdiv"></div>
+      <div style="font-family:var(--serif);font-size:14px;color:var(--mint-dark);margin-bottom:11px">Create Customer Account</div>
+      <div class="fg"><label class="fl-lbl">Full Name</label><input type="text" class="fc" id="r-name" placeholder="Your name"/></div>
+      <div class="fg"><label class="fl-lbl">Email</label><input type="email" class="fc" id="r-email" placeholder="your@email.com"/></div>
+      <div class="fg"><label class="fl-lbl">Phone</label><input type="tel" class="fc" id="r-phone" placeholder="9876543210"/></div>
+      <div class="fg"><label class="fl-lbl">Password</label><input type="password" class="fc" id="r-pass" placeholder="Choose password"/></div>
+      <button class="lbtn" onclick="doRegister()">Create Account 🌸</button>
+      <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--text-soft)">Already registered? <span style="color:var(--mint-dark);cursor:pointer;font-weight:600" onclick="hideReg()">Login</span></div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--text-soft);margin-top:13px">Staff password: <span style="color:var(--mint-dark);font-weight:600">admin123</span></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-wrap">
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-logo"><h2>☕ Smart Cafe</h2><p>Management System</p></div>
+      <div class="sb-user"><div class="av" id="sb-av">☕</div><div><div class="sb-nm" id="sb-nm">User</div><span class="sb-badge" id="sb-badge">role</span></div></div>
+      <nav class="nav-menu" id="nav-menu"></nav>
+      <div class="sb-bot"><button class="logout-btn" onclick="doLogout()">🚪 Sign Out</button></div>
+    </aside>
+    <div class="main-wrap" id="main-wrap">
+      <div class="topbar">
+        <div><div class="topbar-title" id="pg-title">Dashboard</div><div class="topbar-sub" id="pg-sub"></div></div>
+        <div class="topbar-right">
+          <div id="cart-btn-wrap" style="display:none"><button class="cart-topbtn" onclick="toggleCart()">🛒 Cart <div class="cart-badge" id="cart-count">0</div></button></div>
+          <div id="cust-topbar-signout" class="hidden" style="align-items:center;gap:8px">
+            <div style="font-size:12px;color:var(--text-soft)" id="cust-topbar-name"></div>
+            <button onclick="doLogout()" style="background:var(--pink-pale);color:var(--pink-dark);border:1.5px solid var(--pink);border-radius:var(--radius-sm);padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:5px">🚪 Sign Out</button>
+          </div>
+          <div style="font-size:11px;color:var(--text-soft)" id="live-time"></div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="page" id="pg-dashboard">
+        <div class="fhdr"><div class="fhdr-title" id="dash-greet">Good Morning! ✨</div><div class="fhdr-sub">Here's what's happening at your café today</div></div>
+        <div class="stats-grid">
+          <div class="scard sc-m"><div class="sicon">☕</div><div class="sval" id="st-ord">—</div><div class="slbl">Today's Orders</div></div>
+          <div class="scard sc-p"><div class="sicon">💰</div><div class="sval" id="st-rev">—</div><div class="slbl">Today's Revenue</div></div>
+          <div class="scard sc-g"><div class="sicon">⏳</div><div class="sval" id="st-pend">—</div><div class="slbl">Pending Orders</div></div>
+          <div class="scard sc-b"><div class="sicon">🪑</div><div class="sval" id="st-tbl">—</div><div class="slbl">Tables Occupied</div></div>
+          <div class="scard sc-m"><div class="sicon">📅</div><div class="sval" id="st-mrev">—</div><div class="slbl">Month Revenue</div></div>
+          <div class="scard sc-p"><div class="sicon">📦</div><div class="sval" id="st-stk" style="color:var(--pink-dark)">—</div><div class="slbl">Low Stock Alerts</div></div>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="card-hdr"><div><div class="card-title">Revenue Trend</div><div class="card-sub">Last 30 days</div></div></div><div class="chart-box"><canvas id="rev-chart"></canvas></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-title">Sales by Category</div></div><div class="chart-box"><canvas id="cat-chart"></canvas></div></div>
+        </div>
+        <div class="card"><div class="card-hdr"><div class="card-title">Recent Orders</div><button class="btn btn-outline btn-sm" onclick="nav('orders')">View All</button></div><div class="tw"><table><thead><tr><th>Order #</th><th>Table</th><th>Total</th><th>Status</th><th>Time</th></tr></thead><tbody id="dash-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="page" id="pg-orders">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:9px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select class="fc" style="width:auto" id="osf" onchange="loadOrders()"><option value="">All Status</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="preparing">Preparing</option><option value="ready">Ready</option><option value="served">Served</option><option value="completed">Completed</option></select>
+            <input type="date" class="fc" style="width:auto" id="odf" onchange="loadOrders()"/>
+          </div>
+          <button class="btn btn-mint" onclick="openNO()">+ New Order</button>
+        </div>
+        <div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>Order #</th><th>Table</th><th>Type</th><th>Total</th><th>Status</th><th>Time</th><th>Actions</th></tr></thead><tbody id="ord-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- KITCHEN -->
+      <div class="page" id="pg-kitchen">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-size:12px;color:var(--text-soft)"><span class="live-dot"></span>Live kitchen view</div>
+          <button class="btn btn-outline btn-sm" onclick="loadKitchen()">↻ Refresh</button>
+        </div>
+        <div id="kitchen-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px"></div>
+      </div>
+
+      <!-- TABLES -->
+      <div class="page" id="pg-tables">
+        <div style="display:flex;gap:14px;font-size:11px;margin-bottom:12px;flex-wrap:wrap">
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--mint-pale);border:1.5px solid var(--mint);margin-right:4px"></span>Available</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--pink-pale);border:1.5px solid var(--pink);margin-right:4px"></span>Occupied</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--gold-light);border:1.5px solid var(--gold);margin-right:4px"></span>Reserved</span>
+        </div>
+        <div id="tables-content"></div>
+      </div>
+
+      <!-- BILLING -->
+      <div class="page" id="pg-billing">
+        <div class="card" style="padding:0">
+          <div class="card-hdr" style="padding:16px 20px"><div class="card-title">Pending Bills 💳</div><button class="btn btn-outline btn-sm" onclick="loadBilling()">↻ Refresh</button></div>
+          <div class="tw"><table><thead><tr><th>Order #</th><th>Table</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody id="bill-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- MENU -->
+      <div class="page" id="pg-menu">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:9px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select class="fc" style="width:auto" id="mcf" onchange="filterMenu()"><option value="">All Categories</option></select>
+            <select class="fc" style="width:auto" id="mvf" onchange="filterMenu()"><option value="">All Types</option><option value="1">Veg Only</option><option value="0">Non-Veg</option></select>
+          </div>
+          <button class="btn btn-mint" onclick="openMenuM()">+ Add Item</button>
+        </div>
+        <div id="menu-grid-area" class="mgrid"></div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div class="page" id="pg-inventory">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+          <div style="background:var(--pink-pale);border:1.5px solid var(--pink);border-radius:var(--radius-sm);padding:6px 13px;font-size:12px;color:var(--pink-dark)">⚠️ <span id="low-n">0</span> items need restocking</div>
+          <button class="btn btn-mint" onclick="openM('inv-modal')">+ Add Item</button>
+        </div>
+        <div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>Item</th><th>Category</th><th>Qty</th><th>Min Level</th><th>Cost/Unit</th><th>Supplier</th><th>Status</th></tr></thead><tbody id="inv-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- RESERVATIONS -->
+      <div class="page" id="pg-reservations">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;flex-wrap:wrap;gap:8px">
+          <input type="date" class="fc" style="width:auto" id="res-df" onchange="loadRes()"/>
+          <button class="btn btn-mint" onclick="openM('res-modal')">+ New Reservation</button>
+        </div>
+        <div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>Customer</th><th>Phone</th><th>Date</th><th>Time</th><th>Guests</th><th>Status</th></tr></thead><tbody id="res-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- STAFF -->
+      <div class="page" id="pg-staff">
+        <div class="card" style="padding:0">
+          <div class="card-hdr" style="padding:16px 20px"><div class="card-title">Staff Members 👥</div><button class="btn btn-mint" onclick="openM('staff-modal')">+ Add Staff</button></div>
+          <div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Status</th></tr></thead><tbody id="staff-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="page" id="pg-reports">
+        <div class="g2" style="margin-bottom:16px">
+          <div class="card"><div class="card-hdr"><div class="card-title">Daily Revenue 📈</div></div><div class="chart-box"><canvas id="rpt-chart"></canvas></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-title">Customer Ratings ⭐</div></div>
+            <div style="display:flex;flex-direction:column;gap:13px;padding-top:5px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--text-soft);font-size:13px">Food Quality</span><span id="r-food" style="font-family:var(--serif);font-size:20px;color:var(--gold)">—</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--text-soft);font-size:13px">Service</span><span id="r-serv" style="font-family:var(--serif);font-size:20px;color:var(--gold)">—</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--text-soft);font-size:13px">Ambiance</span><span id="r-amb" style="font-family:var(--serif);font-size:20px;color:var(--gold)">—</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--text-soft);font-size:13px">Total Reviews</span><span id="r-total" style="font-size:17px;color:var(--text-dark)">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-hdr"><div class="card-title">Top Selling Items 🏆</div></div><div class="tw"><table><thead><tr><th>Rank</th><th>Item</th><th>Qty Sold</th><th>Revenue</th></tr></thead><tbody id="top-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- FEEDBACK -->
+      <div class="page" id="pg-feedback">
+        <div class="g3" style="margin-bottom:16px">
+          <div class="scard sc-m"><div class="sicon">🍽️</div><div class="sval" id="f-food">—</div><div class="slbl">Food Rating</div></div>
+          <div class="scard sc-p"><div class="sicon">😊</div><div class="sval" id="f-serv">—</div><div class="slbl">Service Rating</div></div>
+          <div class="scard sc-g"><div class="sicon">✨</div><div class="sval" id="f-amb">—</div><div class="slbl">Ambiance Rating</div></div>
+        </div>
+        <div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>Customer</th><th>Food</th><th>Service</th><th>Ambiance</th><th>Comment</th><th>Date</th></tr></thead><tbody id="fb-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- CUSTOMER PORTAL -->
+      <div class="page" id="pg-customer">
+        <div class="fhdr" style="text-align:center;padding:32px 24px">
+          <div style="font-size:40px;margin-bottom:7px">☕</div>
+          <div class="fhdr-title" style="font-size:22px">Welcome to Smart Cafe 🌸</div>
+          <div class="fhdr-sub">Fresh ingredients · Royal flavours · Crafted with love</div>
+          <div style="margin-top:16px;display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-mint" onclick="showCS('c-menu')">🍽️ Order Now</button>
+            <button class="btn btn-pink" onclick="showCS('c-reserve')">📅 Reserve Table</button>
+          </div>
+        </div>
+        <div class="ctabs">
+          <div class="ctab active" id="ct-c-menu" onclick="showCS('c-menu')">🍽️ Menu</div>
+          <div class="ctab" id="ct-c-orders" onclick="showCS('c-orders')">📋 My Orders</div>
+          <div class="ctab" id="ct-c-reserve" onclick="showCS('c-reserve')">📅 Reserve</div>
+          <div class="ctab" id="ct-c-ai-rec" onclick="showCS('c-ai-rec')">🤖 For You</div>
+          <div class="ctab" id="ct-c-voice" onclick="showCS('c-voice')">🎙️ Voice</div>
+          <div class="ctab" id="ct-c-qr" onclick="showCS('c-qr')">📱 QR Order</div>
+          <div class="ctab" id="ct-c-feedback" onclick="showCS('c-feedback')">⭐ Feedback</div>
+          <div class="ctab" id="ct-c-loyalty" onclick="showCS('c-loyalty')">🏆 Rewards</div>
+          <div class="ctab" id="ct-c-waiter" onclick="showCS('c-waiter')">🔔 Call Staff</div>
+          <div class="ctab" id="ct-c-chatbot" onclick="showCS('c-chatbot')">💬 Chat</div>
+        </div>
+        <div class="csec active" id="c-menu">
+          <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px" id="cust-cats"><button class="btn btn-mint btn-sm" onclick="custCat('all',this)">✨ All</button></div>
+          <div id="cust-menu-grid" class="cmgrid"></div>
+        </div>
+        <div class="csec" id="c-orders"><div id="cust-orders-wrap"><div class="empty"><div class="empty-icon">📋</div><p>No orders yet</p></div></div></div>
+        <div class="csec" id="c-reserve">
+          <div class="card" style="max-width:540px;margin:0 auto">
+            <div style="font-family:var(--serif);font-size:17px;font-weight:600;color:var(--text-dark);margin-bottom:14px">📅 Reserve a Table</div>
+            <div class="frow"><div class="fg"><label class="fl-lbl">Name *</label><input type="text" class="fc" id="cr-name" placeholder="Your name"/></div><div class="fg"><label class="fl-lbl">Phone *</label><input type="tel" class="fc" id="cr-phone" placeholder="9876543210"/></div></div>
+            <div class="fg"><label class="fl-lbl">Email</label><input type="email" class="fc" id="cr-email" placeholder="your@email.com"/></div>
+            <div class="frow"><div class="fg"><label class="fl-lbl">Date *</label><input type="date" class="fc" id="cr-date"/></div><div class="fg"><label class="fl-lbl">Time *</label><input type="time" class="fc" id="cr-time"/></div></div>
+            <div class="fg"><label class="fl-lbl">Guests</label><select class="fc" id="cr-guests"><option value="1">1 Person</option><option value="2">2 People</option><option value="3">3 People</option><option value="4" selected>4 People</option><option value="5">5 People</option><option value="6">6 People</option><option value="8">8+ People</option></select></div>
+            <div class="fg"><label class="fl-lbl">Special Requests</label><input type="text" class="fc" id="cr-notes" placeholder="Birthday, dietary needs..."/></div>
+            <button class="btn btn-mint" style="width:100%;justify-content:center" onclick="custReserve()">Confirm Reservation 🌸</button>
+          </div>
+        </div>
+        <!-- AI RECOMMENDATIONS FOR CUSTOMER -->
+        <div class="csec" id="c-ai-rec">
+          <div style="padding:8px 0 16px">
+            <div style="font-family:var(--serif);font-size:18px;font-weight:600;color:var(--text-dark);margin-bottom:4px">🤖 Recommended For You</div>
+            <div style="font-size:12px;color:var(--text-soft);margin-bottom:14px">Based on time of day, popular picks & your order history</div>
+            <div style="background:var(--mint-pale);border:1.5px solid var(--mint-light);border-radius:var(--radius);padding:14px;margin-bottom:14px">
+              <div style="font-size:13px;font-weight:600;color:var(--mint-dark);margin-bottom:8px">📌 Customers who ordered <span id="cust-rec-anchor" style="font-style:italic">Cold Coffee</span> also loved:</div>
+              <div id="cust-also-tags" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-mid);margin-bottom:10px" id="cust-rec-time-label">☀️ Afternoon Picks</div>
+            <div class="rec-grid" id="cust-rec-grid"></div>
+          </div>
+        </div>
+
+        <!-- VOICE ORDER FOR CUSTOMER -->
+        <div class="csec" id="c-voice">
+          <div class="voice-wrap" style="padding:20px 0">
+            <div style="font-size:13px;color:var(--text-soft);margin-bottom:18px;text-align:center">Say: <em>"One cappuccino and two garlic breads"</em></div>
+            <button class="mic-btn" id="cust-mic-btn" onclick="toggleCustVoice()">🎙️</button>
+            <div style="font-size:12px;color:var(--text-soft);margin-top:10px" id="cust-mic-status">Tap mic to speak your order</div>
+            <div class="voice-transcript" id="cust-voice-transcript" style="max-width:100%;font-size:14px">Your speech will appear here...</div>
+            <div class="voice-items" id="cust-voice-parsed" style="width:100%"></div>
+            <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center">
+              <button class="btn btn-mint" id="cust-voice-confirm" onclick="confirmCustVoiceOrder()" style="display:none">🛒 Add to Cart</button>
+              <button class="btn btn-outline btn-sm" onclick="clearCustVoice()">🗑️ Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR ORDER INFO FOR CUSTOMER -->
+        <div class="csec" id="c-qr">
+          <div style="text-align:center;padding:24px 0">
+            <div style="font-size:48px;margin-bottom:12px">📱</div>
+            <div style="font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:8px">Scan & Order at Your Table</div>
+            <div style="font-size:13px;color:var(--text-soft);max-width:360px;margin:0 auto 20px">Each table has a unique QR code. Scan it with your phone camera to instantly view the menu and place your order.</div>
+            <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;max-width:360px;margin:0 auto 14px">
+              <div style="font-size:12px;font-weight:600;color:var(--mint-dark);margin-bottom:6px">📡 Set Your Server IP (for mobile scanning)</div>
+              <div style="font-size:11px;color:var(--text-soft);margin-bottom:8px">Enter your computer's local IP so phones can connect when they scan the QR.</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="qr-ip-input" class="fc" style="flex:1;font-size:12px;padding:7px 10px" placeholder="e.g. 192.168.1.5" value=""/>
+                <button class="btn btn-mint btn-sm" onclick="updateCustQR()">Update QR</button>
+              </div>
+              <div style="font-size:10px;color:var(--text-soft);margin-top:6px">💡 Find your IP: open CMD and type <strong>ipconfig</strong> → look for IPv4 Address</div>
+            </div>
+            <div style="background:var(--mint-pale);border-radius:var(--radius);padding:20px;max-width:360px;margin:0 auto 20px">
+              <canvas id="cust-qr-demo" width="200" height="200" style="border:3px solid var(--mint-light);border-radius:10px;padding:6px;background:#fff"></canvas>
+              <div id="cust-qr-url-display" style="font-size:10px;color:var(--text-soft);margin-top:8px;word-break:break-all"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:400px;margin:0 auto">
+              <div style="background:var(--white);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow);text-align:center">
+                <div style="font-size:24px;margin-bottom:6px">📸</div>
+                <div style="font-size:11px;font-weight:600;color:var(--text-mid)">Scan QR</div>
+              </div>
+              <div style="background:var(--white);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow);text-align:center">
+                <div style="font-size:24px;margin-bottom:6px">🍽️</div>
+                <div style="font-size:11px;font-weight:600;color:var(--text-mid)">Pick Items</div>
+              </div>
+              <div style="background:var(--white);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow);text-align:center">
+                <div style="font-size:24px;margin-bottom:6px">💳</div>
+                <div style="font-size:11px;font-weight:600;color:var(--text-mid)">Pay Online</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="csec" id="c-loyalty">
+          <div style="text-align:center;padding:10px 0 20px">
+            <div id="loyalty-tier-badge" style="display:inline-block;padding:12px 28px;border-radius:30px;font-family:var(--serif);font-size:20px;font-weight:700;background:var(--mint-light);color:var(--mint-dark);margin-bottom:12px">🥈 Silver Member</div>
+            <div id="loyalty-pts-display" style="font-size:36px;font-weight:700;color:var(--text-dark)">0</div>
+            <div style="font-size:12px;color:var(--text-soft);margin-bottom:4px">Available Points</div>
+            <div id="loyalty-progress-wrap" style="max-width:340px;margin:12px auto">
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-soft);margin-bottom:4px">
+                <span id="loy-tier-cur">Silver</span><span id="loy-tier-next">Gold (500 pts)</span>
+              </div>
+              <div style="height:8px;background:var(--mint-pale);border-radius:10px;overflow:hidden">
+                <div id="loy-prog-bar" style="height:100%;background:linear-gradient(90deg,var(--mint-dark),var(--gold));border-radius:10px;width:0%;transition:width 1s"></div>
+              </div>
+              <div id="loy-pts-to-next" style="font-size:11px;color:var(--text-soft);margin-top:4px;text-align:center">500 pts to Gold</div>
+            </div>
+          </div>
+          <!-- Benefits -->
+          <div id="loyalty-benefits-card" class="card" style="margin-bottom:16px">
+            <div style="font-family:var(--serif);font-size:14px;font-weight:600;margin-bottom:10px">Your Benefits</div>
+            <div id="loyalty-benefits-list" style="font-size:13px;color:var(--text-soft)">Loading...</div>
+          </div>
+          <!-- Stats -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+            <div class="card" style="text-align:center;padding:14px">
+              <div style="font-size:20px">⭐</div>
+              <div id="loy-total-pts-cust" style="font-size:18px;font-weight:700">0</div>
+              <div style="font-size:10px;color:var(--text-soft)">Total Earned</div>
+            </div>
+            <div class="card" style="text-align:center;padding:14px">
+              <div style="font-size:20px">🎁</div>
+              <div id="loy-redeemed-cust" style="font-size:18px;font-weight:700">0</div>
+              <div style="font-size:10px;color:var(--text-soft)">Redeemed</div>
+            </div>
+            <div class="card" style="text-align:center;padding:14px">
+              <div style="font-size:20px">💰</div>
+              <div id="loy-spent-cust" style="font-size:18px;font-weight:700">₹0</div>
+              <div style="font-size:10px;color:var(--text-soft)">Total Spent</div>
+            </div>
+          </div>
+          <!-- Coupons -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-family:var(--serif);font-size:14px;font-weight:600;margin-bottom:12px">🎟️ Available Coupons</div>
+            <div id="cust-coupons-list" style="display:grid;gap:10px">Loading...</div>
+          </div>
+          <!-- History -->
+          <div class="card">
+            <div style="font-family:var(--serif);font-size:14px;font-weight:600;margin-bottom:10px">📋 Points History</div>
+            <div id="cust-loyalty-history" style="font-size:12px;max-height:200px;overflow-y:auto">Loading...</div>
+          </div>
+        </div>
+
+        <div class="csec" id="c-waiter">
+          <div style="text-align:center;margin-bottom:20px">
+            <div style="font-family:var(--serif);font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:6px">Need Something?</div>
+            <div style="font-size:13px;color:var(--text-soft)">Tap a button — your waiter is notified instantly 🔔</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:400px;margin:0 auto 20px">
+            <button class="waiter-call-btn" onclick="sendWaiterCall('water')" style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);border:2px solid #90caf9;color:#1565c0">
+              <span style="font-size:36px;display:block;margin-bottom:8px">💧</span>
+              <span style="font-size:14px;font-weight:700">Need Water</span>
+            </button>
+            <button class="waiter-call-btn" onclick="sendWaiterCall('waiter')" style="background:linear-gradient(135deg,var(--mint-pale),var(--mint-light));border:2px solid var(--mint);color:var(--mint-dark)">
+              <span style="font-size:36px;display:block;margin-bottom:8px">🙋</span>
+              <span style="font-size:14px;font-weight:700">Call Waiter</span>
+            </button>
+            <button class="waiter-call-btn" onclick="sendWaiterCall('bill')" style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid #ffd54f;color:#e65100;grid-column:1/-1">
+              <span style="font-size:36px;display:block;margin-bottom:8px">🧾</span>
+              <span style="font-size:16px;font-weight:700">Bill Please</span>
+            </button>
+          </div>
+          <div id="waiter-call-status" style="text-align:center;padding:14px;border-radius:var(--radius);background:var(--mint-pale);font-size:13px;color:var(--mint-dark);display:none">
+            ✅ Your request has been sent! Waiter will be with you shortly.
+          </div>
+          <div class="card" style="margin-top:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--text-soft);margin-bottom:8px">MY CALL HISTORY (THIS SESSION)</div>
+            <div id="waiter-call-history" style="font-size:12px;color:var(--text-soft)">No calls yet this session.</div>
+          </div>
+        </div>
+
+        <div class="csec" id="c-chatbot">
+          <div style="display:flex;flex-direction:column;height:500px">
+            <div id="chatbot-messages" style="flex:1;overflow-y:auto;padding:10px;background:var(--mint-pale);border-radius:var(--radius);margin-bottom:12px;display:flex;flex-direction:column;gap:10px">
+              <div class="chat-bubble bot-bubble">
+                <span style="font-size:18px;margin-right:6px">☕</span>Hi! I'm <strong>Royal</strong>, your café assistant! I can help with:<br><br>
+                🍽️ Menu suggestions<br>📋 Order tracking<br>🕐 Café timings<br>📅 Reservations<br><br>What can I help you with today?
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input id="chatbot-input" class="fc" placeholder="Ask me anything about the menu..." onkeydown="if(event.key==='Enter')sendChatbotMsg()" style="flex:1"/>
+              <button class="btn btn-mint" onclick="sendChatbotMsg()" style="padding:10px 16px">Send</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px" id="chatbot-quick">
+              <button class="btn btn-outline btn-sm" onclick="quickChat('What are your opening hours?')">⏰ Timings</button>
+              <button class="btn btn-outline btn-sm" onclick="quickChat('Suggest a good veg starter')">🌱 Veg options</button>
+              <button class="btn btn-outline btn-sm" onclick="quickChat('What is your best coffee?')">☕ Best coffee</button>
+              <button class="btn btn-outline btn-sm" onclick="quickChat('How do I make a reservation?')">📅 Reservations</button>
+              <button class="btn btn-outline btn-sm" onclick="quickChat('What is the WiFi password?')">📶 WiFi</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="csec" id="c-feedback">
+          <div class="card" style="max-width:540px;margin:0 auto">
+            <div style="font-family:var(--serif);font-size:17px;font-weight:600;color:var(--text-dark);margin-bottom:14px">💌 Share Your Experience</div>
+            <div class="frow"><div class="fg"><label class="fl-lbl">Name</label><input type="text" class="fc" id="cf-name" placeholder="Your name"/></div><div class="fg"><label class="fl-lbl">Email</label><input type="email" class="fc" id="cf-email" placeholder="your@email.com"/></div></div>
+            <div class="gdiv"></div>
+            <div class="fg"><label class="fl-lbl">Food Quality</label><div class="star-row" id="sf-food"><span class="star" onclick="setStar('food',1)">★</span><span class="star" onclick="setStar('food',2)">★</span><span class="star" onclick="setStar('food',3)">★</span><span class="star" onclick="setStar('food',4)">★</span><span class="star" onclick="setStar('food',5)">★</span></div></div>
+            <div class="fg"><label class="fl-lbl">Service</label><div class="star-row" id="sf-serv"><span class="star" onclick="setStar('serv',1)">★</span><span class="star" onclick="setStar('serv',2)">★</span><span class="star" onclick="setStar('serv',3)">★</span><span class="star" onclick="setStar('serv',4)">★</span><span class="star" onclick="setStar('serv',5)">★</span></div></div>
+            <div class="fg"><label class="fl-lbl">Ambiance</label><div class="star-row" id="sf-amb"><span class="star" onclick="setStar('amb',1)">★</span><span class="star" onclick="setStar('amb',2)">★</span><span class="star" onclick="setStar('amb',3)">★</span><span class="star" onclick="setStar('amb',4)">★</span><span class="star" onclick="setStar('amb',5)">★</span></div></div>
+            <div class="fg"><label class="fl-lbl">Comment</label><textarea class="fc" id="cf-comment" rows="3" placeholder="Tell us about your experience..."></textarea></div>
+            <button class="btn btn-pink" style="width:100%;justify-content:center" onclick="custFeedback()">Submit Feedback 💌</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CART -->
+<div class="cart-ov" id="cart-ov" onclick="toggleCart()"></div>
+<div class="cart-sb" id="cart-sb">
+  <div class="cart-hdr"><div class="cart-htitle">🛒 Your Cart</div><span class="cart-x" onclick="toggleCart()">✕</span></div>
+  <div class="cart-list" id="cart-list"><div class="empty"><div class="empty-icon">🛒</div><p>Cart is empty</p></div></div>
+  <div class="cart-ftr">
+    <div class="crow"><span>Subtotal</span><span id="c-sub">₹0.00</span></div>
+    <div class="crow"><span>GST (5%)</span><span id="c-gst">₹0.00</span></div>
+    <div class="cgrand">Total: <span id="c-total">₹0.00</span></div>
+    <div class="fg" style="margin-bottom:9px"><label class="fl-lbl">Order Type</label><select class="fc" id="c-type"><option value="dine_in">Dine In</option><option value="takeaway">Takeaway</option><option value="delivery">Delivery</option></select></div>
+    <div class="fg" style="margin-bottom:13px"><label class="fl-lbl">Notes</label><input type="text" class="fc" id="c-notes" placeholder="Special requests..."/></div>
+    <button class="btn btn-mint" style="width:100%;justify-content:center" onclick="placeOrder()">💳 Place Order & Pay</button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- New Order -->
+<div class="mov" id="new-order-modal">
+  <div class="modal modal-lg">
+    <div class="mhdr"><div class="mtitle">New Order ✨</div><span class="mx" onclick="closeM('new-order-modal')">✕</span></div>
+    <div class="frow" style="margin-bottom:10px"><div class="fg"><label class="fl-lbl">Table</label><select class="fc" id="no-table"><option value="">No Table</option></select></div><div class="fg"><label class="fl-lbl">Order Type</label><select class="fc" id="no-type"><option value="dine_in">Dine In</option><option value="takeaway">Takeaway</option><option value="delivery">Delivery</option></select></div></div>
+    <div class="fg"><label class="fl-lbl">Notes</label><input type="text" class="fc" id="no-notes" placeholder="Special requests..."/></div>
+    <div class="gdiv"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><input type="text" class="fc" id="no-search" oninput="renderSM()" placeholder="Search menu..." style="margin-bottom:9px"/><div id="no-menu" class="mgrid" style="max-height:320px;overflow-y:auto;grid-template-columns:repeat(auto-fill,minmax(110px,1fr))"></div></div>
+      <div>
+        <div style="font-family:var(--serif);font-size:14px;color:var(--mint-dark);margin-bottom:9px">Cart</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr><th style="background:var(--mint-pale);padding:7px 10px;color:var(--mint-dark);text-align:left;font-size:10px">Item</th><th style="background:var(--mint-pale);padding:7px 10px;color:var(--mint-dark);text-align:left;font-size:10px">Qty</th><th style="background:var(--mint-pale);padding:7px 10px;color:var(--mint-dark);text-align:left;font-size:10px">Rate</th><th style="background:var(--mint-pale);padding:7px 10px;color:var(--mint-dark);text-align:left;font-size:10px">Total</th></tr></thead><tbody id="no-cart"></tbody></table>
+        <div class="gdiv"></div>
+        <div style="text-align:right;font-size:12px;color:var(--text-soft)">Subtotal: <span id="no-sub">₹0</span><br/>GST (5%): <span id="no-gst">₹0</span><br/><div style="font-family:var(--serif);font-size:16px;color:var(--mint-dark);margin-top:5px">Total: <span id="no-total">₹0</span></div></div>
+      </div>
+    </div>
+    <div class="mftr"><button class="btn btn-outline" onclick="closeM('new-order-modal')">Cancel</button><button class="btn btn-mint" onclick="submitSO()">Place Order ✨</button></div>
+  </div>
+</div>
+
+<!-- Order Detail -->
+<div class="mov" id="ord-modal"><div class="modal"><div class="mhdr"><div class="mtitle">Order Details</div><span class="mx" onclick="closeM('ord-modal')">✕</span></div><div id="ord-body"></div><div class="mftr"><button class="btn btn-outline" onclick="closeM('ord-modal')">Close</button></div></div></div>
+
+<!-- Payment -->
+<div class="mov" id="pay-modal">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle">💳 Billing — <span id="pay-on"></span></div><span class="mx" onclick="closeM('pay-modal')">✕</span></div>
+    <div id="pay-items" style="margin-bottom:11px"></div>
+    <div class="gdiv"></div>
+    <div style="text-align:right;font-size:12px;color:var(--text-soft)">Subtotal: <span id="pay-sub"></span><br/>GST (5%): <span id="pay-gst"></span><br/><div style="font-family:var(--serif);font-size:20px;color:var(--mint-dark);margin-top:5px">Total: <span id="pay-total"></span></div></div>
+    <div class="gdiv"></div>
+    <div style="font-size:12px;font-weight:600;color:var(--text-soft);margin-bottom:9px">Select Payment Method</div>
+    <div class="pmethods">
+      <div class="pmethod sel" onclick="selP(this,'cash')"><div class="picon">💵</div><div class="pname">Cash</div></div>
+      <div class="pmethod" onclick="selP(this,'upi')"><div class="picon">📱</div><div class="pname">UPI</div></div>
+      <div class="pmethod" onclick="selP(this,'razorpay')"><div class="picon">💳</div><div class="pname">Card/Razorpay</div></div>
+      <div class="pmethod" onclick="selP(this,'online')"><div class="picon">🏦</div><div class="pname">Net Banking</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px"><button class="btn btn-mint" style="flex:1" onclick="doStaffPay()">✅ Confirm Payment</button><button class="btn btn-outline" onclick="closeM('pay-modal')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- Menu Modal -->
+<div class="mov" id="menu-modal"><div class="modal">
+  <div class="mhdr"><div class="mtitle" id="mm-title">Add Menu Item</div><span class="mx" onclick="closeM('menu-modal')">✕</span></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Name</label><input type="text" class="fc" id="mi-name"/></div><div class="fg"><label class="fl-lbl">Price (₹)</label><input type="number" class="fc" id="mi-price"/></div></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Category</label><select class="fc" id="mi-cat"></select></div><div class="fg"><label class="fl-lbl">Type</label><select class="fc" id="mi-veg"><option value="1">Vegetarian 🌿</option><option value="0">Non-Veg 🍗</option></select></div></div>
+  <div class="fg"><label class="fl-lbl">Description</label><input type="text" class="fc" id="mi-desc"/></div>
+  <div class="fg"><label class="fl-lbl">Prep Time (mins)</label><input type="number" class="fc" id="mi-prep" value="15"/></div>
+  <div class="mftr"><button class="btn btn-outline" onclick="closeM('menu-modal')">Cancel</button><button class="btn btn-mint" onclick="saveMI()">Save Item ✨</button></div>
+</div></div>
+
+<!-- Inventory -->
+<div class="mov" id="inv-modal"><div class="modal">
+  <div class="mhdr"><div class="mtitle">Add Inventory Item</div><span class="mx" onclick="closeM('inv-modal')">✕</span></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Item Name</label><input type="text" class="fc" id="ii-name"/></div><div class="fg"><label class="fl-lbl">Category</label><input type="text" class="fc" id="ii-cat" placeholder="e.g. Beverages"/></div></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Quantity</label><input type="number" class="fc" id="ii-qty"/></div><div class="fg"><label class="fl-lbl">Unit</label><select class="fc" id="ii-unit"><option>kg</option><option>litre</option><option>pcs</option><option>gm</option><option>ml</option></select></div></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Min Level</label><input type="number" class="fc" id="ii-min" value="10"/></div><div class="fg"><label class="fl-lbl">Cost/Unit (₹)</label><input type="number" class="fc" id="ii-cost"/></div></div>
+  <div class="fg"><label class="fl-lbl">Supplier</label><input type="text" class="fc" id="ii-sup"/></div>
+  <div class="mftr"><button class="btn btn-outline" onclick="closeM('inv-modal')">Cancel</button><button class="btn btn-mint" onclick="saveInv()">Save</button></div>
+</div></div>
+
+<!-- Reservation -->
+<div class="mov" id="res-modal"><div class="modal">
+  <div class="mhdr"><div class="mtitle">New Reservation 📅</div><span class="mx" onclick="closeM('res-modal')">✕</span></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Customer Name</label><input type="text" class="fc" id="ri-name"/></div><div class="fg"><label class="fl-lbl">Phone</label><input type="tel" class="fc" id="ri-phone"/></div></div>
+  <div class="fg"><label class="fl-lbl">Email</label><input type="email" class="fc" id="ri-email"/></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Date</label><input type="date" class="fc" id="ri-date"/></div><div class="fg"><label class="fl-lbl">Time</label><input type="time" class="fc" id="ri-time"/></div></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Guests</label><input type="number" class="fc" id="ri-guests" value="2" min="1"/></div><div class="fg"><label class="fl-lbl">Notes</label><input type="text" class="fc" id="ri-notes"/></div></div>
+  <div class="mftr"><button class="btn btn-outline" onclick="closeM('res-modal')">Cancel</button><button class="btn btn-mint" onclick="saveRes()">Confirm 🌸</button></div>
+</div></div>
+
+<!-- Staff -->
+<div class="mov" id="staff-modal"><div class="modal">
+  <div class="mhdr"><div class="mtitle">Add Staff Member 👥</div><span class="mx" onclick="closeM('staff-modal')">✕</span></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Full Name</label><input type="text" class="fc" id="si-name"/></div><div class="fg"><label class="fl-lbl">Role</label><select class="fc" id="si-role"><option value="manager">Manager</option><option value="waiter">Waiter</option><option value="kitchen">Kitchen</option></select></div></div>
+  <div class="fg"><label class="fl-lbl">Email</label><input type="email" class="fc" id="si-email"/></div>
+  <div class="frow"><div class="fg"><label class="fl-lbl">Phone</label><input type="tel" class="fc" id="si-phone"/></div><div class="fg"><label class="fl-lbl">Password</label><input type="password" class="fc" id="si-pass"/></div></div>
+  <div class="mftr"><button class="btn btn-outline" onclick="closeM('staff-modal')">Cancel</button><button class="btn btn-mint" onclick="saveStaff()">Add Staff</button></div>
+</div></div>
+
+<!-- ===== AI FOOD RECOMMENDATION PAGE ===== -->
+<div class="page" id="pg-ai-rec">
+  <div class="fhdr"><div class="fhdr-title">🤖 AI Food Recommendations</div><div class="fhdr-sub">Personalized suggestions based on orders, trends & time of day</div></div>
+  <div class="g3" style="gap:14px;margin-bottom:18px">
+    <div class="scard sc-m"><div class="sicon">🕐</div><div class="sval" id="rec-time-slot">—</div><div class="slbl">Current Period</div></div>
+    <div class="scard sc-g"><div class="sicon">🔥</div><div class="sval" id="rec-top-item">—</div><div class="slbl">Most Ordered Today</div></div>
+    <div class="scard sc-p"><div class="sicon">🌟</div><div class="sval" id="rec-score">94%</div><div class="slbl">Match Score</div></div>
+  </div>
+  <div style="background:var(--white);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:18px">
+    <div style="font-family:var(--serif);font-size:16px;font-weight:600;margin-bottom:4px">📌 Customers who ordered <span style="color:var(--mint-dark)" id="rec-anchor">Cold Coffee</span> also ordered:</div>
+    <div class="also-grid" id="rec-also-tags"></div>
+  </div>
+  <div style="font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:4px">Recommended For You Now</div>
+  <div class="rec-grid" id="rec-items-grid"></div>
+</div>
+
+<!-- ===== QR TABLE ORDERING PAGE ===== -->
+<div class="page" id="pg-qr-order">
+  <div class="fhdr"><div class="fhdr-title">📱 QR Table Ordering</div><div class="fhdr-sub">Each table has a unique QR — customers scan to order & pay</div></div>
+  <div style="background:var(--white);border-radius:var(--radius);padding:16px;margin-bottom:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="font-size:13px;font-weight:600;color:var(--text-mid)">Quick Generate:</div>
+    <button class="btn btn-mint btn-sm" onclick="genAllQR()">⚡ Generate All Table QRs</button>
+    <button class="btn btn-outline btn-sm" onclick="printAllQR()">🖨️ Print All</button>
+    <div style="font-size:11px;color:var(--text-soft);margin-left:auto">Scan to open menu → Order → Pay online</div>
+  </div>
+  <div class="qr-table-grid" id="qr-tables-grid"></div>
+</div>
+<!-- QR Modal -->
+<div class="modal" id="qr-modal"><div class="mbox" style="max-width:340px">
+  <div class="mhdr"><div class="mtitle" id="qr-modal-title">Table QR</div><button class="mbtn-x" onclick="closeM('qr-modal')">✕</button></div>
+  <div class="qr-modal-inner">
+    <canvas id="qr-canvas" class="qr-canvas" width="220" height="220"></canvas>
+    <div style="font-size:12px;color:var(--text-soft);margin:8px 0" id="qr-url-text"></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <button class="btn btn-mint btn-sm" onclick="downloadQR()">⬇ Download</button>
+      <button class="btn btn-outline btn-sm" onclick="printQR()">🖨️ Print</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- ===== LIVE KITCHEN DASHBOARD PAGE ===== -->
+<div class="page" id="pg-live-kitchen">
+  <div class="fhdr">
+    <div><div class="fhdr-title">🔴 Live Kitchen Dashboard</div><div class="fhdr-sub">Real-time order flow • Auto-refreshes every 10s</div></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:8px;height:8px;border-radius:50%;background:#4caf50;animation:pulse-ring 1.5s infinite"></div>
+      <span style="font-size:12px;color:var(--mint-dark);font-weight:600">LIVE</span>
+      <button class="btn btn-outline btn-sm" onclick="loadLiveKitchen()">↻ Refresh</button>
+    </div>
+  </div>
+  <div class="kd-cols" id="kd-cols">
+    <div class="kd-col kd-pending"><div class="kd-col-hdr">🟠 Pending</div><div id="kd-pending-list"></div></div>
+    <div class="kd-col kd-prep"><div class="kd-col-hdr">🔥 Preparing</div><div id="kd-prep-list"></div></div>
+    <div class="kd-col kd-ready"><div class="kd-col-hdr">✅ Ready</div><div id="kd-ready-list"></div></div>
+    <div class="kd-col kd-done"><div class="kd-col-hdr">📦 Delivered</div><div id="kd-done-list"></div></div>
+  </div>
+</div>
+
+<!-- ===== AI SALES PREDICTION PAGE ===== -->
+<div class="page" id="pg-ai-sales">
+  <div class="fhdr"><div class="fhdr-title">📈 AI Sales Prediction</div><div class="fhdr-sub">Regression analysis + trend forecasting for smarter decisions</div></div>
+  <div class="pred-grid">
+    <div class="pred-card">
+      <div class="pred-title">⏰ Predicted Peak Hours Today</div>
+      <div id="peak-hours-bars"></div>
+    </div>
+    <div class="pred-card">
+      <div class="pred-title">🏆 Best-Selling Items (Forecast)</div>
+      <div id="best-items-pred"></div>
+    </div>
+    <div class="pred-card" style="grid-column:1/-1">
+      <div class="pred-title">📊 7-Day Revenue Forecast (Linear Regression)</div>
+      <div style="height:220px;position:relative"><canvas id="forecast-chart"></canvas></div>
+    </div>
+    <div class="pred-card">
+      <div class="pred-title">🧠 AI Insights</div>
+      <div id="ai-insights"></div>
+    </div>
+    <div class="pred-card">
+      <div class="pred-title">📉 Trend Analysis</div>
+      <div id="trend-chips" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VOICE ORDERING PAGE ===== -->
+<div class="page" id="pg-voice">
+  <div class="fhdr"><div class="fhdr-title">🎙️ Voice Ordering Assistant</div><div class="fhdr-sub">Speak your order — AI converts speech to order items instantly</div></div>
+  <div class="voice-wrap">
+    <div style="font-size:13px;color:var(--text-soft);margin-bottom:20px;text-align:center">Say something like: <em>"One cappuccino and two garlic breads"</em></div>
+    <button class="mic-btn" id="mic-btn" onclick="toggleVoice()">🎙️</button>
+    <div style="font-size:12px;color:var(--text-soft);margin-top:12px" id="mic-status">Click mic to start listening</div>
+    <div class="voice-transcript" id="voice-transcript">Your speech will appear here...</div>
+    <div class="voice-items" id="voice-parsed"></div>
+    <div style="display:flex;gap:10px;margin-top:16px" id="voice-actions" style="display:none">
+      <button class="btn btn-mint" id="voice-confirm-btn" onclick="confirmVoiceOrder()" style="display:none">✅ Confirm Order</button>
+      <button class="btn btn-outline btn-sm" onclick="clearVoice()">🗑️ Clear</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ================================================
+     PAGE: LOYALTY & REWARDS ADMIN
+================================================= -->
+<div class="page" id="pg-loyalty-admin">
+  <div class="fhdr"><div class="fhdr-title">🏆 Loyalty & Rewards Management</div><div class="fhdr-sub">Manage points, membership tiers & coupons</div></div>
+  <div class="g3" style="margin-bottom:20px" id="loyalty-stats-row">
+    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val" id="loy-total-members">—</div><div class="stat-lbl">Total Members</div></div>
+    <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-val" id="loy-total-pts">—</div><div class="stat-lbl">Points Issued</div></div>
+    <div class="stat-card"><div class="stat-icon">🎟️</div><div class="stat-val" id="loy-coupons">—</div><div class="stat-lbl">Active Coupons</div></div>
+  </div>
+  <!-- Tier Cards -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div class="card" style="border-top:4px solid #9e9e9e">
+      <div style="font-size:32px;margin-bottom:8px">🥈</div>
+      <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:#616161">Silver</div>
+      <div style="font-size:12px;color:var(--text-soft);margin:6px 0">0 – 499 Points</div>
+      <div style="font-size:11px;color:var(--text-soft)">• 2% Cashback<br>• Standard benefits</div>
+    </div>
+    <div class="card" style="border-top:4px solid #d4a843">
+      <div style="font-size:32px;margin-bottom:8px">🥇</div>
+      <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:#d4a843">Gold</div>
+      <div style="font-size:12px;color:var(--text-soft);margin:6px 0">500 – 1,999 Points</div>
+      <div style="font-size:11px;color:var(--text-soft)">• 5% Cashback<br>• 5% Order Discount<br>• Priority seating</div>
+    </div>
+    <div class="card" style="border-top:4px solid #7b68ee">
+      <div style="font-size:32px;margin-bottom:8px">💎</div>
+      <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:#7b68ee">Platinum</div>
+      <div style="font-size:12px;color:var(--text-soft);margin:6px 0">2,000+ Points</div>
+      <div style="font-size:11px;color:var(--text-soft)">• 10% Cashback<br>• 10% Order Discount<br>• Free birthday dessert<br>• Exclusive events</div>
+    </div>
+  </div>
+  <!-- Coupons Section -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:var(--serif);font-size:16px;font-weight:600">🎟️ Coupons</div>
+      <button class="btn btn-mint btn-sm" onclick="openCouponModal()">+ Create Coupon</button>
+    </div>
+    <div id="coupons-table-wrap">
+      <table class="tbl"><thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Used/Max</th><th>Expires</th><th>Status</th></tr></thead>
+      <tbody id="coupons-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-soft)">Loading...</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     PAGE: WAITER DASHBOARD  
+================================================= -->
+<div class="page" id="pg-waiter-dashboard">
+  <div class="fhdr">
+    <div class="fhdr-title">🔔 Smart Waiter Calling System</div>
+    <div class="fhdr-sub">Real-time customer requests — respond instantly</div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+      <div id="wd-conn-badge" style="font-size:11px;padding:4px 12px;border-radius:20px;background:var(--mint-light);color:var(--mint-dark)">● Connecting...</div>
+      <div id="wd-count" style="font-size:12px;font-weight:600;color:var(--text-soft)">0 pending</div>
+    </div>
+  </div>
+  <!-- Stats row -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+    <div class="card" style="text-align:center;border-left:4px solid var(--pink-deep)">
+      <div style="font-size:28px">💧</div><div id="wd-water-count" style="font-size:22px;font-weight:700;color:var(--text-dark)">0</div><div style="font-size:11px;color:var(--text-soft)">Water Requests</div>
+    </div>
+    <div class="card" style="text-align:center;border-left:4px solid var(--mint-deep)">
+      <div style="font-size:28px">🙋</div><div id="wd-waiter-count" style="font-size:22px;font-weight:700">0</div><div style="font-size:11px;color:var(--text-soft)">Waiter Calls</div>
+    </div>
+    <div class="card" style="text-align:center;border-left:4px solid var(--gold)">
+      <div style="font-size:28px">🧾</div><div id="wd-bill-count" style="font-size:22px;font-weight:700">0</div><div style="font-size:11px;color:var(--text-soft)">Bill Requests</div>
+    </div>
+    <div class="card" style="text-align:center;border-left:4px solid #9c27b0">
+      <div style="font-size:28px">✅</div><div id="wd-resolved-count" style="font-size:22px;font-weight:700">0</div><div style="font-size:11px;color:var(--text-soft)">Resolved Today</div>
+    </div>
+  </div>
+  <!-- Active Calls -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:var(--serif);font-size:16px;font-weight:600">📣 Active Calls</div>
+      <button class="btn btn-outline btn-sm" onclick="loadWaiterCalls()">🔄 Refresh</button>
+    </div>
+    <div id="wd-calls-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">
+      <div style="text-align:center;padding:30px;color:var(--text-soft);grid-column:1/-1">No active calls right now ✅</div>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMER SECTIONS (injected inside customer portal) are added via JS below -->
+
+<div id="toasts"></div>
+
+<script>
+const API=window.location.origin+'/api';
+let user=null,token=null,loginRole='admin',curPage='';
+let sCart=[],cCart=[],menuAll=[],custMenuAll=[],editMId=null,billOrdId=null,selPayM='cash';
+let rats={food:0,serv:0,amb:0};
+const EM={Beverages:'☕',Starters:'🍢','Main Course':'🍛',Desserts:'🍮',Sandwiches:'🥙'};
+const STEPS=['pending','confirmed','preparing','ready','served','completed'];
+const SEM={pending:'⏳',confirmed:'✅',preparing:'🔥',ready:'🍽️',served:'😊',completed:'⭐',cancelled:'❌'};
+const SMSG={pending:'⏳ Order received! Waiting for confirmation...',confirmed:'✅ Confirmed! Getting ready...',preparing:'🔥 Chef is preparing your order!',ready:'🍽️ Ready! Waiter is on the way...',served:'😊 Enjoy your meal!',completed:'⭐ Thank you for dining with us!',cancelled:'❌ Order cancelled.'};
+
+document.addEventListener('DOMContentLoaded',()=>{
+  token=localStorage.getItem('sc_tok');const u=localStorage.getItem('sc_usr');
+  if(token&&u){user=JSON.parse(u);initApp();}
+  setInterval(()=>{const e=document.getElementById('live-time');if(e)e.textContent=new Date().toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});},1000);
+  const d=document.getElementById('res-df');if(d)d.value=new Date().toISOString().split('T')[0];
+  const cd=document.getElementById('cr-date');if(cd)cd.min=new Date().toISOString().split('T')[0];
+});
+
+function setRole(r,el){loginRole=r;document.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');document.getElementById('reg-lnk').style.display=r==='customer'?'block':'none';
+  const h={admin:'admin@royalcafe.com',manager:'manager@royalcafe.com',waiter:'waiter@royalcafe.com',kitchen:'kitchen@royalcafe.com',customer:''};
+  document.getElementById('l-email').value=h[r]||'';document.getElementById('l-pass').value=r!=='customer'?'admin123':'';
+  document.getElementById('reg-lnk').style.display=r==='customer'?'block':'none';
+  document.getElementById('lf-area').style.display='block';document.getElementById('reg-area').style.display='none';}
+function showReg(){document.getElementById('lf-area').style.display='none';document.getElementById('reg-area').style.display='block';document.getElementById('reg-lnk').style.display='none';}
+function hideReg(){document.getElementById('lf-area').style.display='block';document.getElementById('reg-area').style.display='none';document.getElementById('reg-lnk').style.display='block';}
+
+async function doLogin(){
+  const email=document.getElementById('l-email').value,pass=document.getElementById('l-pass').value;
+  if(!email||!pass){toast('Enter email and password!','error');return;}
+  try{const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+  const d=await r.json();if(!r.ok)throw new Error(d.message);
+  token=d.token;user=d.user;localStorage.setItem('sc_tok',token);localStorage.setItem('sc_usr',JSON.stringify(user));
+  initApp();toast('Welcome, '+user.name+'! ✨','success');}catch(e){toast(e.message,'error');}
+}
+async function doRegister(){
+  const name=document.getElementById('r-name').value,email=document.getElementById('r-email').value,pass=document.getElementById('r-pass').value,phone=document.getElementById('r-phone').value;
+  if(!name||!email||!pass){toast('Fill all fields!','error');return;}
+  try{const r=await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pass,phone,role:'customer'})});
+  const d=await r.json();if(!r.ok)throw new Error(d.message);
+  toast('Account created! Please login.','success');hideReg();document.getElementById('l-email').value=email;}catch(e){toast(e.message,'error');}
+}
+
+function initApp(){
+  document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';
+  const AC={admin:'av-admin',manager:'av-manager',waiter:'av-waiter',kitchen:'av-kitchen',customer:'av-customer'};
+  const AI={admin:'👑',manager:'📊',waiter:'🍽️',kitchen:'👨‍🍳',customer:'🌸'};
+  const BC={admin:'rb-admin',manager:'rb-manager',waiter:'rb-waiter',kitchen:'rb-kitchen',customer:'rb-customer'};
+  document.getElementById('sb-av').textContent=AI[user.role]||'☕';document.getElementById('sb-av').className='av '+AC[user.role];
+  document.getElementById('sb-nm').textContent=user.name;document.getElementById('sb-badge').textContent=user.role;document.getElementById('sb-badge').className='sb-badge '+BC[user.role];
+  buildNav();
+  if(user.role==='customer'){document.getElementById('sidebar').style.display='none';document.getElementById('main-wrap').style.marginLeft='0';document.getElementById('cart-btn-wrap').style.display='flex';const ctsign=document.getElementById('cust-topbar-signout');if(ctsign){ctsign.classList.remove('hidden');ctsign.style.display='flex';}const ctnm=document.getElementById('cust-topbar-name');if(ctnm){ctnm.textContent='Hi '+user.name+' 🌸';}nav('customer');loadCustMenu();}
+  else if(user.role==='kitchen'){nav('kitchen');setInterval(loadKitchen,15000);}
+  else if(user.role==='waiter'){nav('orders');}
+  else nav('dashboard');
+}
+
+function buildNav(){
+  const r=user.role;let h='';
+  if(r==='customer')h=`<div class="nav-sec">Portal</div><div class="nav-item" onclick="nav('customer')"><span class="nav-icon">🌸</span>My Portal</div>`;
+  else{
+    if(['admin','manager'].includes(r))h+=`<div class="nav-sec">Overview</div><div class="nav-item" onclick="nav('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>`;
+    h+=`<div class="nav-sec">Operations</div><div class="nav-item" onclick="nav('orders')"><span class="nav-icon">📋</span>Orders</div>`;
+    if(r!=='waiter')h+=`<div class="nav-item" onclick="nav('kitchen')"><span class="nav-icon">👨‍🍳</span>Kitchen</div>`;
+    h+=`<div class="nav-item" onclick="nav('tables')"><span class="nav-icon">🪑</span>Tables</div>`;
+    if(['admin','manager','waiter'].includes(r))h+=`<div class="nav-item" onclick="nav('billing')"><span class="nav-icon">💳</span>Billing</div>`;
+    h+=`<div class="nav-item" onclick="nav('reservations')"><span class="nav-icon">📅</span>Reservations</div>`;
+    if(['admin','manager'].includes(r)){
+      h+=`<div class="nav-sec">Management</div><div class="nav-item" onclick="nav('menu')"><span class="nav-icon">🍽️</span>Menu</div><div class="nav-item" onclick="nav('inventory')"><span class="nav-icon">📦</span>Inventory</div><div class="nav-item" onclick="nav('staff')"><span class="nav-icon">👥</span>Staff</div>`;
+      h+=`<div class="nav-sec">Analytics</div><div class="nav-item" onclick="nav('reports')"><span class="nav-icon">📈</span>Reports</div><div class="nav-item" onclick="nav('feedback')"><span class="nav-icon">⭐</span>Feedback</div>`;
+      h+=`<div class="nav-sec">🤖 AI Features</div><div class="nav-item" onclick="nav('ai-rec')"><span class="nav-icon">🍽️</span>AI Recommendations</div><div class="nav-item" onclick="nav('ai-sales')"><span class="nav-icon">📊</span>Sales Prediction</div>`;
+      h+=`<div class="nav-sec">Advanced</div><div class="nav-item" onclick="nav('qr-order')"><span class="nav-icon">📱</span>QR Ordering</div><div class="nav-item" onclick="nav('live-kitchen')"><span class="nav-icon">🔴</span>Live Kitchen</div><div class="nav-item" onclick="nav('voice')"><span class="nav-icon">🎙️</span>Voice Order</div>`;
+      h+=`<div class="nav-sec">✨ New Features</div><div class="nav-item" onclick="nav('loyalty-admin')"><span class="nav-icon">🏆</span>Loyalty & Rewards</div><div class="nav-item" onclick="nav('waiter-dashboard')"><span class="nav-icon">🔔</span>Waiter Calls</div>`;
+    }
+  }
+  document.getElementById('nav-menu').innerHTML=h;
+}
+
+function nav(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  const pg=document.getElementById('pg-'+p);if(pg)pg.classList.add('active');
+  const ni=document.querySelector('.nav-item[onclick*="\''+p+'\'"]');if(ni)ni.classList.add('active');
+  const T={dashboard:'Dashboard',orders:'Orders',kitchen:'Kitchen Display',tables:'Tables',billing:'Billing',menu:'Menu',inventory:'Inventory',reservations:'Reservations',staff:'Staff',reports:'Reports',feedback:'Feedback',customer:'My Portal','ai-rec':'🤖 AI Recommendations','qr-order':'📱 QR Table Ordering','live-kitchen':'🔴 Live Kitchen Dashboard','ai-sales':'📈 AI Sales Prediction',voice:'🎙️ Voice Ordering'};
+  document.getElementById('pg-title').textContent=T[p]||p;document.getElementById('pg-sub').textContent='';
+  curPage=p;
+  const fn={dashboard:loadDash,orders:loadOrders,kitchen:loadKitchen,tables:loadTables,billing:loadBilling,menu:loadMenu,inventory:loadInv,reservations:loadRes,staff:loadStaff,reports:loadReports,feedback:loadFeedback,'ai-rec':loadAIRec,'qr-order':loadQROrder,'live-kitchen':loadLiveKitchen,'ai-sales':loadAISales,voice:loadVoice};
+  if(fn[p])fn[p]();else if(p==='customer'){loadCustMenu();loadCustOrders();}
+}
+
+function doLogout(){localStorage.removeItem('sc_tok');localStorage.removeItem('sc_usr');user=null;token=null;custMenuAll=[];document.getElementById('cust-cats').innerHTML='<button class="btn btn-mint btn-sm" onclick="custCat(\'all\',this)">✨ All</button>';document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('sidebar').style.display='flex';document.getElementById('main-wrap').style.marginLeft='250px';const ctsign=document.getElementById('cust-topbar-signout');if(ctsign){ctsign.classList.add('hidden');ctsign.style.display='none';}}
+
+async function GET(ep){const r=await fetch(API+ep,{headers:{Authorization:'Bearer '+token}});if(r.status===401){doLogout();return null;}return r.json();}
+async function POST(ep,data){const r=await fetch(API+ep,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(data)});return{ok:r.ok,data:await r.json()};}
+async function PUT(ep,data){const r=await fetch(API+ep,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(data)});return{ok:r.ok,data:await r.json()};}
+
+async function loadDash(){
+  const d=await GET('/reports/summary');if(!d)return;
+  document.getElementById('st-ord').textContent=d.today_orders;document.getElementById('st-rev').textContent='₹'+parseFloat(d.today_revenue).toFixed(0);
+  document.getElementById('st-pend').textContent=d.pending_orders;document.getElementById('st-tbl').textContent=(d.tables_occupied||0)+'/'+d.tables_total;
+  document.getElementById('st-mrev').textContent='₹'+parseFloat(d.month_revenue).toFixed(0);document.getElementById('st-stk').textContent=d.low_stock_count;
+  const h=new Date().getHours();document.getElementById('dash-greet').textContent=h<12?'Good Morning! ☀️':h<17?'Good Afternoon! 🌿':'Good Evening! 🌸';
+  const orders=await GET('/orders?limit=5');
+  document.getElementById('dash-tbody').innerHTML=orders&&orders.length?orders.map(o=>`<tr><td><strong style="color:var(--mint-dark)">${o.order_number}</strong></td><td>${o.table_number||'-'}</td><td>₹${parseFloat(o.total).toFixed(0)}</td><td><span class="badge b-${o.status}">${o.status}</span></td><td>${new Date(o.created_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text-soft);padding:16px">No orders yet today ☕</td></tr>';
+  loadDashCharts();
+}
+async function loadDashCharts(){
+  const[rv,ct]=await Promise.all([GET('/reports/revenue'),GET('/reports/category-revenue')]);if(!rv||!ct)return;
+  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8a6f5c'}}},scales:{x:{ticks:{color:'#8a6f5c'},grid:{color:'rgba(168,213,186,0.2)'}},y:{ticks:{color:'#8a6f5c'},grid:{color:'rgba(168,213,186,0.2)'}}}};
+  const rc=document.getElementById('rev-chart');if(rc){if(rc._c)rc._c.destroy();rc._c=new Chart(rc,{type:'line',data:{labels:rv.map(r=>new Date(r.date).toLocaleDateString('en-IN',{month:'short',day:'numeric'})),datasets:[{label:'Revenue',data:rv.map(r=>parseFloat(r.revenue)),borderColor:'#6bbf8e',backgroundColor:'rgba(107,191,142,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#3a8c5e'}]},options:{...opts}});}
+  const cc=document.getElementById('cat-chart');if(cc){if(cc._c)cc._c.destroy();cc._c=new Chart(cc,{type:'doughnut',data:{labels:ct.map(c=>c.category),datasets:[{data:ct.map(c=>parseFloat(c.revenue)),backgroundColor:['#6bbf8e','#e97fa0','#d4a843','#5ba3d9','#a8d5ba','#f4a7b9']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#8a6f5c',padding:9}}}}});}
+}
+
+async function loadOrders(){
+  const sf=document.getElementById('osf')?.value||'',df=document.getElementById('odf')?.value||'';
+  let url='/orders?';if(sf)url+=`status=${sf}&`;if(df)url+=`date=${df}`;
+  const orders=await GET(url)||[];
+  document.getElementById('ord-tbody').innerHTML=orders.length?orders.map(o=>`
+    <tr><td><strong style="color:var(--mint-dark)">${o.order_number}</strong></td><td>${o.table_number||'-'}</td><td>${o.order_type}</td><td>₹${parseFloat(o.total).toFixed(0)}</td>
+    <td><span class="badge b-${o.status}">${o.status}</span></td><td>${new Date(o.created_at).toLocaleString('en-IN')}</td>
+    <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="viewOrd(${o.id})">View</button>
+      ${o.status!=='completed'&&o.status!=='cancelled'?`<button class="btn btn-mint btn-sm" onclick="updS(${o.id},'${nS(o.status)}')">→ ${nS(o.status)}</button>`:''}
+      ${o.status==='served'?`<button class="btn btn-gold btn-sm" onclick="openPay(${o.id})">💳 Bill</button>`:''}
+    </div></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><p>No orders found</p></div></td></tr>';
+}
+function nS(s){return{pending:'confirmed',confirmed:'preparing',preparing:'ready',ready:'served',served:'completed'}[s]||'';}
+async function updS(id,status){if(!status)return;const{ok}=await PUT(`/orders/${id}/status`,{status});if(ok){toast('Order → '+status,'success');loadOrders();if(curPage==='kitchen')loadKitchen();if(curPage==='billing')loadBilling();}}
+async function viewOrd(id){
+  const o=await GET('/orders/'+id);if(!o)return;
+  document.getElementById('ord-body').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:13px"><div><div style="font-family:var(--serif);font-size:17px;color:var(--mint-dark)">${o.order_number}</div><div style="font-size:11px;color:var(--text-soft)">${new Date(o.created_at).toLocaleString('en-IN')}</div></div><span class="badge b-${o.status}">${o.status}</span></div><div class="gdiv"></div><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="background:var(--mint-pale);padding:8px 11px;color:var(--mint-dark);text-align:left;font-size:10px">Item</th><th style="background:var(--mint-pale);padding:8px 11px;color:var(--mint-dark);text-align:left;font-size:10px">Qty</th><th style="background:var(--mint-pale);padding:8px 11px;color:var(--mint-dark);text-align:left;font-size:10px">Rate</th><th style="background:var(--mint-pale);padding:8px 11px;color:var(--mint-dark);text-align:left;font-size:10px">Total</th></tr></thead><tbody>${o.items.map(i=>`<tr><td style="padding:8px 11px;border-bottom:1px solid var(--border)">${i.item_name}</td><td style="padding:8px 11px;border-bottom:1px solid var(--border)">${i.quantity}</td><td style="padding:8px 11px;border-bottom:1px solid var(--border)">₹${parseFloat(i.unit_price).toFixed(0)}</td><td style="padding:8px 11px;border-bottom:1px solid var(--border)">₹${parseFloat(i.total_price).toFixed(0)}</td></tr>`).join('')}</tbody></table><div class="gdiv"></div><div style="text-align:right;font-size:12px;color:var(--text-soft)">Subtotal: ₹${parseFloat(o.subtotal).toFixed(2)}<br/>GST: ₹${parseFloat(o.tax).toFixed(2)}<br/><div style="font-family:var(--serif);font-size:19px;color:var(--mint-dark);margin-top:5px">Total: ₹${parseFloat(o.total).toFixed(2)}</div></div>`;
+  openM('ord-modal');
+}
+
+let sMI=[];
+async function openNO(){sCart=[];sMI=await GET('/menu/items?available=true')||[];const tables=await GET('/tables')||[];document.getElementById('no-table').innerHTML='<option value="">No Table</option>'+tables.filter(t=>t.status==='available').map(t=>`<option value="${t.id}">${t.table_number}</option>`).join('');renderSM();updSC();openM('new-order-modal');}
+function renderSM(){const q=document.getElementById('no-search')?.value.toLowerCase()||'';const items=sMI.filter(m=>m.name.toLowerCase().includes(q));document.getElementById('no-menu').innerHTML=items.map(m=>`<div class="mcard" onclick="sAC(${m.id})"><div class="memoji" style="font-size:28px">${EM[m.category_name]||'🍽️'}</div><div class="mname" style="font-size:11px">${m.name}</div><div class="mprice" style="font-size:13px">₹${parseFloat(m.price).toFixed(0)}</div></div>`).join('');}
+function sAC(id){const item=sMI.find(m=>m.id===id);if(!item)return;const ex=sCart.find(c=>c.id===id);if(ex)ex.qty++;else sCart.push({id,name:item.name,price:parseFloat(item.price),qty:1});updSC();toast(item.name+' added','success');}
+function sCQ(i,d){sCart[i].qty+=d;if(sCart[i].qty<=0)sCart.splice(i,1);updSC();}
+function updSC(){const tb=document.getElementById('no-cart');tb.innerHTML=sCart.length?sCart.map((c,i)=>`<tr><td style="padding:5px 9px;border-bottom:1px solid var(--border);font-size:11px">${c.name}</td><td style="padding:5px 9px;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:4px"><button class="qs-btn" style="width:19px;height:19px;font-size:11px" onclick="sCQ(${i},-1)">−</button><span style="font-size:11px">${c.qty}</span><button class="qs-btn" style="width:19px;height:19px;font-size:11px" onclick="sCQ(${i},1)">+</button></div></td><td style="padding:5px 9px;border-bottom:1px solid var(--border);font-size:11px">₹${c.price.toFixed(0)}</td><td style="padding:5px 9px;border-bottom:1px solid var(--border);font-size:11px">₹${(c.price*c.qty).toFixed(0)}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text-soft);padding:14px;font-size:11px">Cart is empty</td></tr>';const sub=sCart.reduce((s,c)=>s+c.price*c.qty,0),gst=sub*0.05;document.getElementById('no-sub').textContent='₹'+sub.toFixed(0);document.getElementById('no-gst').textContent='₹'+gst.toFixed(0);document.getElementById('no-total').textContent='₹'+(sub+gst).toFixed(0);}
+async function submitSO(){if(!sCart.length){toast('Cart is empty!','error');return;}const{ok,data}=await POST('/orders',{table_id:document.getElementById('no-table').value||null,order_type:document.getElementById('no-type').value,notes:document.getElementById('no-notes').value,items:sCart.map(c=>({menu_item_id:c.id,quantity:c.qty}))});if(ok){toast('Order placed! ✨','success');closeM('new-order-modal');loadOrders();}else toast(data.message,'error');}
+
+async function loadKitchen(){const[c,p]=await Promise.all([GET('/orders?status=confirmed'),GET('/orders?status=preparing')]);const all=[...(c||[]),...(p||[])];const grid=document.getElementById('kitchen-grid');if(!all.length){grid.innerHTML='<div class="empty"><div class="empty-icon">👨‍🍳</div><p>No active orders right now</p></div>';return;}const full=await Promise.all(all.map(o=>GET('/orders/'+o.id)));grid.innerHTML=full.filter(Boolean).map(o=>`<div class="kcard ${o.status==='confirmed'?'new-ord':'prep'}"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px"><div><div class="knum">${o.order_number}</div><div style="font-size:10px;color:var(--text-soft)">${o.table_number||o.order_type} · ${new Date(o.created_at).toLocaleTimeString('en-IN')}</div></div><span class="badge b-${o.status}">${o.status}</span></div><ul class="kitems">${o.items.map(i=>`<li class="kitem"><span>${i.item_name}</span><strong style="color:var(--mint-dark)">×${i.quantity}</strong></li>`).join('')}</ul><div style="display:flex;gap:6px;margin-top:9px">${o.status==='confirmed'?`<button class="btn btn-gold btn-sm" onclick="updS(${o.id},'preparing')">🔥 Start Cooking</button>`:''} ${o.status==='preparing'?`<button class="btn btn-mint btn-sm" onclick="updS(${o.id},'ready')">✅ Mark Ready</button>`:''}</div></div>`).join('');}
+
+async function loadTables(){const tables=await GET('/tables')||[];const floors=[...new Set(tables.map(t=>t.floor))];document.getElementById('tables-content').innerHTML=floors.map(f=>`<div style="margin-bottom:20px"><div style="font-size:11px;color:var(--mint-dark);margin-bottom:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px">${f} Floor</div><div class="tmap">${tables.filter(t=>t.floor===f).map(t=>`<div class="ctable ${t.status}" onclick="togT(${t.id},'${t.status}')"><span style="font-size:18px">${t.status==='available'?'🪑':t.status==='occupied'?'👥':'📅'}</span><div>${t.table_number}</div><div style="font-size:8px;text-transform:capitalize">${t.status}</div></div>`).join('')}</div></div>`).join('');}
+async function togT(id,s){const n={available:'occupied',occupied:'cleaning',cleaning:'available',reserved:'available'};await PUT(`/tables/${id}`,{status:n[s]});loadTables();}
+
+async function loadBilling(){const orders=await GET('/orders?status=served')||[];document.getElementById('bill-tbody').innerHTML=orders.length?orders.map(o=>`<tr><td><strong style="color:var(--mint-dark)">${o.order_number}</strong></td><td>${o.table_number||'-'}</td><td>₹${parseFloat(o.total).toFixed(0)}</td><td><span class="badge b-${o.status}">${o.status}</span></td><td><button class="btn btn-mint btn-sm" onclick="openPay(${o.id})">💳 Pay Now</button></td></tr>`).join(''):'<tr><td colspan="5"><div class="empty"><div class="empty-icon">💳</div><p>No pending bills</p></div></td></tr>';}
+async function openPay(ordId){const o=await GET('/orders/'+ordId);if(!o)return;billOrdId=ordId;document.getElementById('pay-on').textContent=o.order_number;document.getElementById('pay-items').innerHTML=o.items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${i.item_name} ×${i.quantity}</span><span>₹${parseFloat(i.total_price).toFixed(0)}</span></div>`).join('');document.getElementById('pay-sub').textContent='₹'+parseFloat(o.subtotal).toFixed(2);document.getElementById('pay-gst').textContent='₹'+parseFloat(o.tax).toFixed(2);document.getElementById('pay-total').textContent='₹'+parseFloat(o.total).toFixed(2);openM('pay-modal');}
+function selP(el,m){document.querySelectorAll('.pmethod').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');selPayM=m;}
+async function doStaffPay(){if(!billOrdId)return;if(selPayM==='razorpay'){await initRzp(billOrdId,true);return;}let txId=null;if(selPayM==='upi'){txId=prompt('Enter UPI Transaction ID:');if(!txId)return;}const{ok}=await POST('/payments/manual',{order_id:billOrdId,payment_method:selPayM,transaction_id:txId});if(ok){toast('Payment done! ✅','success');closeM('pay-modal');genInv(billOrdId);loadBilling();}}
+async function initRzp(ordId,isStaff=false){const{ok,data}=await POST('/payments/create-razorpay-order',{order_id:ordId});if(!ok){toast('Razorpay error','error');return;}if(!data.key||data.key==='rzp_test_YOUR_KEY'){await POST('/payments/manual',{order_id:ordId,payment_method:'online'});toast('✅ Payment done','success');if(isStaff){closeM('pay-modal');genInv(ordId);loadBilling();}else{cCart=[];updCC();toggleCart();showCS('c-orders');loadCustOrders();}return;}const opt={key:data.key,amount:data.amount,currency:'INR',name:'Smart Cafe',description:'Order Payment',order_id:data.razorpay_order_id,prefill:{name:user.name,email:user.email},theme:{color:'#3a8c5e'},handler:async(resp)=>{const v=await POST('/payments/verify-razorpay',{...resp,order_id:ordId});if(v.ok){toast('🎉 Payment Successful! 🌸','success');if(isStaff){closeM('pay-modal');genInv(ordId);loadBilling();}else{cCart=[];updCC();toggleCart();showCS('c-orders');loadCustOrders();}}},modal:{ondismiss:async()=>{if(!isStaff){await POST('/payments/manual',{order_id:ordId,payment_method:'cash'});cCart=[];updCC();toggleCart();showCS('c-orders');loadCustOrders();toast('Order placed! Pay at counter.','info');}}}};new Razorpay(opt).open();}
+async function genInv(ordId){const o=await GET('/orders/'+ordId);if(!o)return;const w=window.open('','_blank','width=700,height=900');w.document.write(`<!DOCTYPE html><html><head><title>Invoice</title><style>body{font-family:Georgia,serif;padding:40px;color:#2d2016;background:#faf6f0}.hdr{text-align:center;border-bottom:2px solid #6bbf8e;padding-bottom:16px;margin-bottom:16px}.logo{font-size:24px;color:#3a8c5e}.sub{font-size:10px;color:#8a6f5c;letter-spacing:3px;text-transform:uppercase}.inv{font-size:11px;color:#8a6f5c;margin-top:4px}table{width:100%;border-collapse:collapse;margin:13px 0}th{background:#edf7f1;padding:8px;text-align:left;font-size:11px;text-transform:uppercase;color:#3a8c5e}td{padding:8px;border-bottom:1px solid #d4efe0;font-size:13px}.total{text-align:right;margin-top:11px}.pbox{background:#edf7f1;padding:9px 13px;border-radius:8px;margin-top:11px;font-size:12px}.footer{text-align:center;margin-top:28px;font-size:11px;color:#b8a49a}@media print{body{padding:20px}}</style></head><body><div class="hdr"><div class="logo">☕ Smart Cafe</div><div class="sub">Fine Dining & Premium Coffee</div><div class="inv">INVOICE #${o.order_number} | ${new Date().toLocaleString('en-IN')}</div></div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:11px"><div><b>Table:</b> ${o.table_number||'-'}<br><b>Type:</b> ${o.order_type}</div><div><b>Date:</b> ${new Date(o.created_at).toLocaleDateString('en-IN')}</div></div><table><thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody>${o.items.map(i=>`<tr><td>${i.item_name}</td><td>${i.quantity}</td><td>₹${parseFloat(i.unit_price).toFixed(2)}</td><td>₹${parseFloat(i.total_price).toFixed(2)}</td></tr>`).join('')}</tbody></table><div class="total"><div style="font-size:12px;color:#8a6f5c">Subtotal: ₹${parseFloat(o.subtotal).toFixed(2)}</div><div style="font-size:12px;color:#8a6f5c">GST (5%): ₹${parseFloat(o.tax).toFixed(2)}</div><div style="font-size:20px;color:#3a8c5e;font-weight:bold;margin-top:5px">TOTAL: ₹${parseFloat(o.total).toFixed(2)}</div></div><div class="pbox"><b>Status:</b> PAID ✅ 🌸</div><div class="footer">Thank you for dining with us! 🌸<br>+91 98765 43210</div><div style="text-align:center;margin-top:16px"><button onclick="window.print()" style="background:#3a8c5e;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;color:white">🖨️ Print Invoice</button></div></body></html>`);w.document.close();}
+
+async function loadMenu(){const[items,cats]=await Promise.all([GET('/menu/items'),GET('/menu/categories')]);if(!items||!cats)return;menuAll=items;const cf=document.getElementById('mcf');cf.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');const ms=document.getElementById('mi-cat');if(ms)ms.innerHTML=cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');renderMI(items);}
+function renderMI(items){document.getElementById('menu-grid-area').innerHTML=items.map(m=>`<div class="mcard"><div class="memoji">${EM[m.category_name]||'🍽️'}</div><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px"><div class="mname">${m.name}</div><span class="badge b-${m.is_veg?'veg':'nonveg'}" style="font-size:9px">${m.is_veg?'V':'NV'}</span></div><div class="mprice">₹${parseFloat(m.price).toFixed(0)}</div><div class="mcat">${m.category_name}</div><div style="display:flex;gap:4px;margin-top:8px"><button class="btn btn-outline btn-sm" style="flex:1" onclick='editMI(${JSON.stringify(m).replace(/'/g,"&apos;")})'>✏️</button><button class="btn btn-danger btn-sm" onclick="delMI(${m.id})">🗑</button></div>${!m.is_available?'<div style="color:var(--pink-dark);font-size:10px;margin-top:3px">Unavailable</div>':''}</div>`).join('');}
+async function filterMenu(){const cat=document.getElementById('mcf').value,veg=document.getElementById('mvf').value;let url='/menu/items?';if(cat)url+=`category=${cat}&`;if(veg!=='')url+=`veg=${veg==='1'?'true':'false'}`;const items=await GET(url)||[];renderMI(items);}
+function openMenuM(){editMId=null;document.getElementById('mm-title').textContent='Add Menu Item ✨';document.getElementById('mi-name').value='';document.getElementById('mi-price').value='';document.getElementById('mi-desc').value='';document.getElementById('mi-prep').value=15;openM('menu-modal');}
+function editMI(m){editMId=m.id;document.getElementById('mm-title').textContent='Edit Item';document.getElementById('mi-name').value=m.name;document.getElementById('mi-price').value=m.price;document.getElementById('mi-desc').value=m.description||'';document.getElementById('mi-cat').value=m.category_id;document.getElementById('mi-veg').value=m.is_veg?'1':'0';document.getElementById('mi-prep').value=m.prep_time;openM('menu-modal');}
+async function saveMI(){const d={category_id:document.getElementById('mi-cat').value,name:document.getElementById('mi-name').value,description:document.getElementById('mi-desc').value,price:document.getElementById('mi-price').value,is_veg:document.getElementById('mi-veg').value==='1',prep_time:document.getElementById('mi-prep').value,is_available:true};const r=editMId?await PUT(`/menu/items/${editMId}`,d):await POST('/menu/items',d);if(r.ok){toast(editMId?'Item updated ✨':'Item added ✨','success');closeM('menu-modal');loadMenu();}else toast(r.data.message,'error');}
+async function delMI(id){if(!confirm('Remove this item?'))return;await fetch(API+`/menu/items/${id}`,{method:'DELETE',headers:{Authorization:'Bearer '+token}});toast('Item removed','success');loadMenu();}
+
+async function loadInv(){const items=await GET('/inventory')||[];const low=items.filter(i=>parseFloat(i.quantity)<=parseFloat(i.min_quantity));document.getElementById('low-n').textContent=low.length;document.getElementById('inv-tbody').innerHTML=items.map(i=>`<tr><td>${i.item_name}</td><td>${i.category||'-'}</td><td style="color:${parseFloat(i.quantity)<=parseFloat(i.min_quantity)?'var(--pink-dark)':'var(--mint-dark)'};font-weight:600">${parseFloat(i.quantity).toFixed(1)} ${i.unit}</td><td>${parseFloat(i.min_quantity).toFixed(1)} ${i.unit}</td><td>${i.cost_per_unit?'₹'+parseFloat(i.cost_per_unit).toFixed(0):'-'}</td><td>${i.supplier||'-'}</td><td><span class="badge ${parseFloat(i.quantity)<=parseFloat(i.min_quantity)?'b-cancelled':'b-available'}">${parseFloat(i.quantity)<=parseFloat(i.min_quantity)?'Low Stock':'OK'}</span></td></tr>`).join('');}
+async function saveInv(){const d={item_name:document.getElementById('ii-name').value,category:document.getElementById('ii-cat').value,quantity:document.getElementById('ii-qty').value,unit:document.getElementById('ii-unit').value,min_quantity:document.getElementById('ii-min').value,cost_per_unit:document.getElementById('ii-cost').value,supplier:document.getElementById('ii-sup').value};const{ok}=await POST('/inventory',d);if(ok){toast('Item added ✨','success');closeM('inv-modal');loadInv();}}
+
+async function loadRes(){const date=document.getElementById('res-df')?.value||new Date().toISOString().split('T')[0];const rows=await GET(`/reservations?date=${date}`)||[];document.getElementById('res-tbody').innerHTML=rows.length?rows.map(r=>`<tr><td>${r.customer_name}</td><td>${r.customer_phone}</td><td>${r.date}</td><td>${r.time}</td><td>${r.guests}</td><td><span class="badge b-${r.status}">${r.status}</span></td></tr>`).join(''):'<tr><td colspan="6"><div class="empty"><div class="empty-icon">📅</div><p>No reservations</p></div></td></tr>';}
+async function saveRes(){const d={customer_name:document.getElementById('ri-name').value,customer_phone:document.getElementById('ri-phone').value,customer_email:document.getElementById('ri-email').value,date:document.getElementById('ri-date').value,time:document.getElementById('ri-time').value,guests:document.getElementById('ri-guests').value,notes:document.getElementById('ri-notes').value};if(!d.customer_name||!d.customer_phone||!d.date||!d.time){toast('Fill required fields!','error');return;}const{ok}=await POST('/reservations',d);if(ok){toast('Reservation confirmed! 🌸','success');closeM('res-modal');loadRes();}}
+
+async function loadStaff(){const staff=await GET('/staff')||[];document.getElementById('staff-tbody').innerHTML=staff.map(s=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="av av-${s.role}" style="width:28px;height:28px;font-size:11px">${s.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}</div>${s.name}</div></td><td>${s.email}</td><td><span class="badge b-confirmed">${s.role}</span></td><td>${s.phone||'-'}</td><td><span class="badge b-${s.status==='active'?'available':'cancelled'}">${s.status}</span></td></tr>`).join('');}
+async function saveStaff(){const d={name:document.getElementById('si-name').value,email:document.getElementById('si-email').value,password:document.getElementById('si-pass').value,phone:document.getElementById('si-phone').value,role:document.getElementById('si-role').value};const{ok,data}=await POST('/auth/register',d);if(ok){toast('Staff added! 👥','success');closeM('staff-modal');loadStaff();}else toast(data.message,'error');}
+
+async function loadReports(){const[rv,top,rats]=await Promise.all([GET('/reports/revenue'),GET('/reports/top-items'),GET('/reports/ratings')]);if(top)document.getElementById('top-tbody').innerHTML=top.map((t,i)=>`<tr><td style="color:var(--mint-dark);font-weight:700">#${i+1}</td><td>${t.name}</td><td>${t.total_qty}</td><td>₹${parseFloat(t.total_revenue).toFixed(0)}</td></tr>`).join('');if(rats){document.getElementById('r-food').textContent=parseFloat(rats.food||0).toFixed(1)+' ★';document.getElementById('r-serv').textContent=parseFloat(rats.service||0).toFixed(1)+' ★';document.getElementById('r-amb').textContent=parseFloat(rats.ambiance||0).toFixed(1)+' ★';document.getElementById('r-total').textContent=rats.total||0;}if(rv){const rc=document.getElementById('rpt-chart');if(rc){if(rc._c)rc._c.destroy();rc._c=new Chart(rc,{type:'bar',data:{labels:rv.map(r=>new Date(r.date).toLocaleDateString('en-IN',{month:'short',day:'numeric'})),datasets:[{label:'Revenue',data:rv.map(r=>parseFloat(r.revenue)),backgroundColor:'rgba(107,191,142,0.7)',borderColor:'#6bbf8e',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8a6f5c'}}},scales:{x:{ticks:{color:'#8a6f5c'},grid:{color:'rgba(168,213,186,0.2)'}},y:{ticks:{color:'#8a6f5c'},grid:{color:'rgba(168,213,186,0.2)'}}}}});}}}
+
+async function loadFeedback(){const[fb,rats]=await Promise.all([GET('/feedback'),GET('/reports/ratings')]);if(rats){document.getElementById('f-food').textContent=parseFloat(rats.food||0).toFixed(1)+' ★';document.getElementById('f-serv').textContent=parseFloat(rats.service||0).toFixed(1)+' ★';document.getElementById('f-amb').textContent=parseFloat(rats.ambiance||0).toFixed(1)+' ★';}document.getElementById('fb-tbody').innerHTML=(fb||[]).map(f=>`<tr><td>${f.customer_name||'Anon'}</td><td>${'⭐'.repeat(f.food_rating)}</td><td>${'⭐'.repeat(f.service_rating)}</td><td>${'⭐'.repeat(f.ambiance_rating)}</td><td style="font-size:11px">${f.comment||'-'}</td><td>${new Date(f.created_at).toLocaleDateString('en-IN')}</td></tr>`).join('');}
+
+function showCS(n){document.querySelectorAll('.csec').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));const el=document.getElementById(n);if(el)el.classList.add('active');const tab=document.getElementById('ct-'+n);if(tab)tab.classList.add('active');if(n==='c-orders')loadCustOrders();if(n==='c-ai-rec')loadCustAIRec();if(n==='c-voice')loadCustVoice();if(n==='c-qr')loadCustQR();}
+async function loadCustMenu(){if(custMenuAll.length){renderCM(custMenuAll);return;}try{const[items,cats]=await Promise.all([fetch(API+'/menu/items?available=true').then(r=>r.json()),fetch(API+'/menu/categories').then(r=>r.json())]);custMenuAll=items;const cf=document.getElementById('cust-cats');cf.innerHTML='<button class="btn btn-mint btn-sm" onclick="custCat(\'all\',this)">✨ All</button>';cats.forEach(c=>{const b=document.createElement('button');b.className='btn btn-outline btn-sm';b.textContent=(EM[c.name]||'🍴')+' '+c.name;b.onclick=()=>custCat(c.id,b);cf.appendChild(b);});renderCM(items);}catch(e){document.getElementById('cust-menu-grid').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load menu. Make sure server is running!</p></div>';}}
+function custCat(id,btn){document.querySelectorAll('#cust-cats .btn').forEach(b=>{b.classList.remove('btn-mint');b.classList.add('btn-outline');});btn.classList.add('btn-mint');btn.classList.remove('btn-outline');renderCM(id==='all'?custMenuAll:custMenuAll.filter(m=>m.category_id==id));}
+function renderCM(items){document.getElementById('cust-menu-grid').innerHTML=items.map(m=>`<div class="mcard" style="padding:14px"><div class="memoji" style="font-size:42px">${EM[m.category_name]||'🍽️'}</div><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px"><div class="mname">${m.name}</div><div style="width:9px;height:9px;border-radius:50%;background:${m.is_veg?'var(--mint-dark)':'var(--pink-dark)'};flex-shrink:0;margin-top:4px" title="${m.is_veg?'Veg':'Non-Veg'}"></div></div><div style="font-size:10px;color:var(--text-soft);margin-bottom:8px;line-height:1.4">${m.description||'Premium quality, freshly prepared'}</div><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="mprice">₹${parseFloat(m.price).toFixed(0)}</div><div style="font-size:10px;color:var(--text-soft)">⏱ ${m.prep_time} mins</div></div><button class="btn btn-mint btn-sm" onclick="cAC(${m.id})">+ Add</button></div></div>`).join('');}
+function cAC(id){const item=custMenuAll.find(m=>m.id===id);if(!item)return;const ex=cCart.find(c=>c.id===id);if(ex)ex.qty++;else cCart.push({id,name:item.name,price:parseFloat(item.price),qty:1,emoji:EM[item.category_name]||'🍽️'});updCC();toast(item.name+' added! 🌸','success');}
+function cCQ(i,d){cCart[i].qty+=d;if(cCart[i].qty<=0)cCart.splice(i,1);updCC();}
+function updCC(){const count=cCart.reduce((s,c)=>s+c.qty,0);document.getElementById('cart-count').textContent=count;const list=document.getElementById('cart-list');if(!cCart.length){list.innerHTML='<div class="empty"><div class="empty-icon">🛒</div><p>Cart is empty</p></div>';}else list.innerHTML=cCart.map((c,i)=>`<div class="citem"><div class="cemoji">${c.emoji}</div><div class="cinfo"><div class="cnm">${c.name}</div><div class="cpr">₹${(c.price*c.qty).toFixed(0)}</div></div><div class="qctrl"><button class="qbtn" onclick="cCQ(${i},-1)">−</button><span class="qn">${c.qty}</span><button class="qbtn" onclick="cCQ(${i},1)">+</button></div></div>`).join('');const sub=cCart.reduce((s,c)=>s+c.price*c.qty,0),gst=sub*0.05;document.getElementById('c-sub').textContent='₹'+sub.toFixed(2);document.getElementById('c-gst').textContent='₹'+gst.toFixed(2);document.getElementById('c-total').textContent='₹'+(sub+gst).toFixed(2);}
+function toggleCart(){document.getElementById('cart-sb').classList.toggle('open');document.getElementById('cart-ov').classList.toggle('open');}
+async function placeOrder(){if(!cCart.length){toast('Cart is empty!','error');return;}try{const{ok,data}=await POST('/orders',{order_type:document.getElementById('c-type').value,notes:document.getElementById('c-notes').value,customer_id:user.id,items:cCart.map(c=>({menu_item_id:c.id,quantity:c.qty}))});if(!ok)throw new Error(data.message);await initRzp(data.order_id,false);}catch(e){toast(e.message||'Order failed','error');}}
+async function loadCustOrders(){if(!token)return;const orders=await GET('/orders')||[];const mine=orders.filter(o=>o.customer_id===user.id).slice(0,8);const c=document.getElementById('cust-orders-wrap');if(!mine.length){c.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No orders yet!</p><button class="btn btn-mint" style="margin-top:13px" onclick="showCS(\'c-menu\')">Order Now ☕</button></div>';return;}c.innerHTML=mine.map(o=>{const step=STEPS.indexOf(o.status);const isCan=o.status==='cancelled';return`<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:13px;box-shadow:var(--shadow)"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px"><div><div style="font-family:var(--serif);font-size:17px;color:var(--mint-dark)">${o.order_number}</div><div style="font-size:11px;color:var(--text-soft)">${new Date(o.created_at).toLocaleString('en-IN')} · ${o.order_type.replace('_',' ')}</div></div><div style="font-family:var(--serif);font-size:16px;color:var(--mint-dark)">₹${parseFloat(o.total).toFixed(0)}</div></div>${isCan?`<div style="background:var(--pink-pale);border-radius:var(--radius-sm);padding:9px;font-size:12px;color:var(--pink-dark)">❌ Order cancelled</div>`:`<div style="font-size:10px;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;font-weight:700">Live Tracking</div><div class="tbar">${STEPS.map((s,i)=>`<div class="tstep ${i<step?'done':i===step?'cur':''}"><div class="tdot">${i<=step?SEM[s]:'○'}</div><div class="tlbl">${s}</div></div>`).join('')}</div><div style="background:${o.status==='completed'?'var(--mint-pale)':'var(--cream)'};border-radius:var(--radius-sm);padding:9px 11px;font-size:11px;margin-top:9px;color:${o.status==='completed'?'var(--mint-dark)':o.status==='ready'?'var(--gold)':'var(--text-mid)'}">  ${SMSG[o.status]||''}</div>`}<div style="display:flex;gap:7px;margin-top:9px"><button class="btn btn-outline btn-sm" onclick="loadCustOrders()">↻ Refresh</button>${o.status==='completed'?`<button class="btn btn-pink btn-sm" onclick="showCS('c-feedback')">💌 Rate</button>`:''}</div></div>`;}).join('');if(curPage==='customer')setTimeout(loadCustOrders,15000);}
+async function custReserve(){const d={customer_name:document.getElementById('cr-name').value,customer_phone:document.getElementById('cr-phone').value,customer_email:document.getElementById('cr-email').value,date:document.getElementById('cr-date').value,time:document.getElementById('cr-time').value,guests:document.getElementById('cr-guests').value,notes:document.getElementById('cr-notes').value};if(!d.customer_name||!d.customer_phone||!d.date||!d.time){toast('Fill required fields!','error');return;}const r=await fetch(API+'/reservations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});const data=await r.json();if(r.ok){toast('🌸 Reservation confirmed!','success');document.getElementById('cr-name').value='';document.getElementById('cr-phone').value='';document.getElementById('cr-notes').value='';}else toast(data.message,'error');}
+function setStar(type,val){rats[type]=val;document.querySelectorAll('#sf-'+type+' .star').forEach((s,i)=>s.classList.toggle('on',i<val));}
+async function custFeedback(){if(!document.getElementById('cf-name').value){toast('Enter your name!','error');return;}if(!rats.food||!rats.serv||!rats.amb){toast('Rate all 3 categories!','error');return;}const r=await fetch(API+'/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer_name:document.getElementById('cf-name').value,customer_email:document.getElementById('cf-email').value,food_rating:rats.food,service_rating:rats.serv,ambiance_rating:rats.amb,comment:document.getElementById('cf-comment').value})});const data=await r.json();if(r.ok){toast('💌 Thank you for your feedback!','success');document.getElementById('cf-name').value='';document.getElementById('cf-email').value='';document.getElementById('cf-comment').value='';rats={food:0,serv:0,amb:0};['food','serv','amb'].forEach(t=>document.querySelectorAll('#sf-'+t+' .star').forEach(s=>s.classList.remove('on')));}else toast(data.message,'error');}
+
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function toast(msg,type='info'){const icons={success:'✅',error:'❌',info:'💡'};const el=document.createElement('div');el.className='toast '+type;el.innerHTML=`<span>${icons[type]}</span><span>${msg}</span>`;document.getElementById('toasts').appendChild(el);setTimeout(()=>el.remove(),3500);}
+
+// =============================================
+// 1. AI FOOD RECOMMENDATION SYSTEM
+// =============================================
+const MENU_EMOJIS={'Cold Coffee':'☕','Cappuccino':'☕','Latte':'🍵','Espresso':'☕','Garlic Bread':'🥖','Burger':'🍔','Sandwich':'🥪','Pasta':'🍝','Pizza':'🍕','Biryani':'🍚','Noodles':'🍜','Fries':'🍟','Brownie':'🍫','Cheesecake':'🍰','Muffin':'🧁','Shake':'🥤','Juice':'🍊','Masala Chai':'🍵','Paneer Tikka':'🧆','Spring Roll':'🥟'};
+const ALSO_ORDERED={'Cold Coffee':['Garlic Bread','Brownie','Sandwich'],'Cappuccino':['Muffin','Cheesecake','Garlic Bread'],'Burger':['Fries','Cold Coffee','Shake'],'Biryani':['Masala Chai','Spring Roll','Paneer Tikka'],'Pizza':['Cold Coffee','Garlic Bread','Fries'],'Pasta':['Garlic Bread','Latte','Cheesecake']};
+const TIME_RECS={morning:['Cappuccino','Masala Chai','Muffin','Sandwich','Latte'],afternoon:['Cold Coffee','Burger','Pasta','Pizza','Fries'],evening:['Latte','Cheesecake','Brownie','Paneer Tikka','Shake'],night:['Biryani','Paneer Tikka','Noodles','Spring Roll','Masala Chai']};
+
+async function loadAIRec(){
+  const h=new Date().getHours();
+  const slot=h<11?'morning':h<16?'afternoon':h<20?'evening':'night';
+  const slotLabel={'morning':'🌅 Morning','afternoon':'☀️ Afternoon','evening':'🌇 Evening','night':'🌙 Night'};
+  document.getElementById('rec-time-slot').textContent=slotLabel[slot];
+  // Get top item from reports
+  const top=await GET('/reports/top-items');
+  const topItem=(top&&top[0])?top[0].name:'Cold Coffee';
+  document.getElementById('rec-top-item').textContent=topItem;
+  document.getElementById('rec-anchor').textContent=topItem;
+  // Also ordered
+  const also=ALSO_ORDERED[topItem]||['Garlic Bread','Brownie','Fries'];
+  document.getElementById('rec-also-tags').innerHTML=also.map(a=>`<div class="also-tag">${MENU_EMOJIS[a]||'🍴'} ${a}</div>`).join('');
+  // Recommendations
+  const timeItems=TIME_RECS[slot]||TIME_RECS.afternoon;
+  const menuItems=await GET('/menu/items?available=true')||[];
+  const recs=timeItems.map(name=>{
+    const found=menuItems.find(m=>m.name&&m.name.toLowerCase().includes(name.toLowerCase()));
+    return{name,price:found?parseFloat(found.price).toFixed(0):Math.floor(Math.random()*200+80),id:found?found.id:null,reason:slot==='morning'?'Perfect for morning':'Popular at this hour'};
+  });
+  document.getElementById('rec-items-grid').innerHTML=recs.map((r,i)=>`
+    <div class="rec-card" onclick="toast('Added ${r.name} to suggestions!','success')">
+      <div class="rec-badge">${i===0?'⭐ Top Pick':i===1?'🔥 Trending':'💡 AI Pick'}</div>
+      <div class="rec-icon">${MENU_EMOJIS[r.name]||'🍴'}</div>
+      <div class="rec-name">${r.name}</div>
+      <div class="rec-why">${r.reason}</div>
+      <div class="rec-price">₹${r.price}</div>
+    </div>`).join('');
+}
+
+// =============================================
+// 2. QR CODE TABLE ORDERING
+// =============================================
+// Real QR Code generator using qrcodejs library
+let _qrInstances = {};
+function drawQR(canvas, text) {
+  const containerId = 'qr-gen-container-' + canvas.id;
+  let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement('div');
+    container.id = containerId;
+    container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:' + canvas.width + 'px;height:' + canvas.height + 'px';
+    document.body.appendChild(container);
+  }
+  container.innerHTML = '';
+  // Destroy old instance
+  if (_qrInstances[canvas.id]) { try { _qrInstances[canvas.id].clear(); } catch(e){} }
+  _qrInstances[canvas.id] = new QRCode(container, {
+    text: text,
+    width: canvas.width,
+    height: canvas.height,
+    colorDark: '#1a1a1a',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+  // Copy generated image to canvas
+  setTimeout(() => {
+    const img = container.querySelector('img') || container.querySelector('canvas');
+    if (!img) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (img.tagName === 'IMG') {
+      const i = new Image();
+      i.onload = () => { ctx.drawImage(i, 0, 0, canvas.width, canvas.height); };
+      i.src = img.src;
+    } else {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+  }, 100);
+}
+
+let activeQRTable=null;
+async function loadQROrder(){
+  const tables=await GET('/tables')||[];
+  const grid=document.getElementById('qr-tables-grid');
+  grid.innerHTML=tables.map(t=>`
+    <div class="qr-tcard ${t.status}" onclick="showTableQR(${t.id},'${t.table_number}','${t.status}')">
+      <div style="font-size:24px">${t.status==='available'?'🪑':t.status==='occupied'?'👥':'📅'}</div>
+      <div style="font-family:var(--serif);font-size:15px;font-weight:600;margin:6px 0">${t.table_number}</div>
+      <div style="font-size:10px;color:var(--text-soft);text-transform:capitalize;margin-bottom:8px">${t.status} · ${t.floor} Floor</div>
+      <div style="font-size:10px;background:var(--mint-pale);color:var(--mint-dark);padding:4px 8px;border-radius:20px;font-weight:600">📱 View QR</div>
+    </div>`).join('');
+}
+
+function showTableQR(id,num,status){
+  activeQRTable={id,num};
+  const url=`${window.location.origin}/order?table=${id}&num=${encodeURIComponent(num)}`;
+  document.getElementById('qr-modal-title').textContent=`QR Code — ${num}`;
+  document.getElementById('qr-url-text').textContent=url;
+  const canvas=document.getElementById('qr-canvas');
+  drawQR(canvas,url);
+  openM('qr-modal');
+}
+
+function downloadQR(){
+  const canvas=document.getElementById('qr-canvas');
+  const a=document.createElement('a');a.download=`QR-${activeQRTable?.num||'table'}.png`;a.href=canvas.toDataURL();a.click();
+  toast('QR downloaded!','success');
+}
+
+function printQR(){
+  const canvas=document.getElementById('qr-canvas');
+  const w=window.open('','_blank','width=400,height=500');
+  w.document.write(`<html><body style="text-align:center;font-family:Georgia,serif;padding:30px"><h2>☕ Smart Cafe</h2><h3>${activeQRTable?.num||'Table'}</h3><img src="${canvas.toDataURL()}" style="width:250px"/><p style="font-size:12px;color:#888">Scan to view menu & order</p><script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+
+function genAllQR(){toast('All QR codes generated! Use Print All to export.','success');}
+function printAllQR(){toast('Sending to printer... (connect real printer in production)','info');}
+
+// =============================================
+// 3. LIVE KITCHEN DASHBOARD
+// =============================================
+let kitchenInterval=null;
+async function loadLiveKitchen(){
+  const statuses=['confirmed','preparing','ready','delivered'];
+  const lists={confirmed:'kd-pending-list',preparing:'kd-prep-list',ready:'kd-ready-list',delivered:'kd-done-list'};
+  const results=await Promise.all(statuses.map(s=>GET('/orders?status='+s)));
+  statuses.forEach((s,i)=>{
+    const orders=results[i]||[];
+    const el=document.getElementById(lists[s]);
+    if(!orders.length){el.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">No orders</div>`;return;}
+    el.innerHTML=orders.slice(0,8).map(o=>{
+      const mins=Math.floor((Date.now()-new Date(o.created_at).getTime())/60000);
+      const timerCls=mins>20?'hot':mins>10?'warn':'';
+      return`<div class="kd-ticket">
+        <div class="kd-ticket-hdr">
+          <div class="kd-ord-num">${o.order_number}</div>
+          <div class="kd-timer ${timerCls}">⏱ ${mins}m</div>
+        </div>
+        <div style="font-size:10px;color:var(--text-soft);margin-bottom:6px">${o.table_number||o.order_type} · ${new Date(o.created_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="kd-btn-row">
+          ${s==='confirmed'?`<button class="btn btn-gold btn-sm" onclick="updS(${o.id},'preparing');setTimeout(loadLiveKitchen,500)">🔥 Cook</button>`:''}
+          ${s==='preparing'?`<button class="btn btn-mint btn-sm" onclick="updS(${o.id},'ready');setTimeout(loadLiveKitchen,500)">✅ Ready</button>`:''}
+          ${s==='ready'?`<button class="btn btn-sm" style="background:var(--gold-light);color:#8b6914" onclick="updS(${o.id},'delivered');setTimeout(loadLiveKitchen,500)">📦 Deliver</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  });
+  clearInterval(kitchenInterval);
+  kitchenInterval=setInterval(loadLiveKitchen,10000);
+}
+
+// =============================================
+// 4. AI SALES PREDICTION (Linear Regression)
+// =============================================
+function linRegPredict(data){
+  const n=data.length;
+  if(n<2)return data.map((_,i)=>({x:i,y:data[0]||0}));
+  let sx=0,sy=0,sxy=0,sx2=0;
+  data.forEach((y,x)=>{sx+=x;sy+=y;sxy+=x*y;sx2+=x*x;});
+  const m=(n*sxy-sx*sy)/(n*sx2-sx*sx)||0;
+  const b=(sy-m*sx)/n;
+  return Array.from({length:n+7},(_,x)=>({x,y:Math.max(0,Math.round(m*x+b))}));
+}
+
+let forecastChart=null;
+async function loadAISales(){
+  const rev=await GET('/reports/revenue')||[];
+  const top=await GET('/reports/top-items')||[];
+  // Peak hours simulation (in real app: query DB by hour)
+  const peakData=[
+    {label:'7–9 AM',pct:45,hot:false},{label:'10–12',pct:60,hot:false},
+    {label:'12–2 PM',pct:95,hot:true},{label:'2–4 PM',pct:55,hot:false},
+    {label:'4–6 PM',pct:80,hot:true},{label:'6–8 PM',pct:90,hot:true},
+    {label:'8–10 PM',pct:70,hot:false}
+  ];
+  document.getElementById('peak-hours-bars').innerHTML=peakData.map(p=>`
+    <div class="peak-bar">
+      <div class="peak-label">${p.label}</div>
+      <div class="peak-track"><div class="peak-fill${p.hot?' hot':''}" style="width:${p.pct}%"></div></div>
+      <div class="peak-val" style="${p.hot?'color:var(--gold)':''}">${p.hot?'🔥':''}${p.pct}%</div>
+    </div>`).join('');
+  // Best selling predicted
+  document.getElementById('best-items-pred').innerHTML=(top.slice(0,5)||[]).map((t,i)=>`
+    <div class="best-row">
+      <div class="best-rank">${i+1}</div>
+      <div class="best-name">${t.name}</div>
+      <div class="best-pred">~${Math.round(t.total_qty*1.12)} units</div>
+    </div>`).join('')||'<div style="color:var(--text-soft);font-size:12px;padding:10px">No data yet — run some orders first!</div>';
+  // Forecast chart
+  const historical=rev.slice(-7).map(r=>parseFloat(r.revenue)||0);
+  const predicted=linRegPredict(historical);
+  const labels=[...rev.slice(-7).map(r=>new Date(r.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})),...Array.from({length:7},(_,i)=>`Day +${i+1}`)];
+  const actualVals=[...historical,...Array(7).fill(null)];
+  const predVals=[...Array(historical.length).fill(null),...predicted.slice(historical.length).map(p=>p.y)];
+  const rc=document.getElementById('forecast-chart');
+  if(forecastChart)forecastChart.destroy();
+  forecastChart=new Chart(rc,{type:'line',data:{labels,datasets:[
+    {label:'Actual Revenue',data:actualVals,borderColor:'#6bbf8e',backgroundColor:'rgba(107,191,142,0.1)',borderWidth:2,pointRadius:4,tension:0.4},
+    {label:'AI Predicted',data:predVals,borderColor:'#d4a843',backgroundColor:'rgba(212,168,67,0.1)',borderWidth:2,borderDash:[6,3],pointRadius:4,tension:0.4}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8a6f5c',font:{size:11}}}},scales:{x:{ticks:{color:'#8a6f5c',font:{size:10}},grid:{color:'rgba(168,213,186,0.2)'}},y:{ticks:{color:'#8a6f5c',callback:v=>'₹'+v},grid:{color:'rgba(168,213,186,0.2)'}}}}});
+  // AI Insights
+  const totalRev=historical.reduce((a,b)=>a+b,0);
+  const avgRev=totalRev/Math.max(historical.length,1);
+  const trend=historical.length>1?historical[historical.length-1]-historical[0]:0;
+  document.getElementById('ai-insights').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+      <div style="background:var(--mint-pale);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--mint-dark);margin-bottom:4px">📊 7-Day Avg Revenue</div>
+        <div style="font-size:20px;font-family:var(--serif);color:var(--mint-dark)">₹${Math.round(avgRev).toLocaleString('en-IN')}</div>
+      </div>
+      <div style="background:${trend>=0?'var(--mint-pale)':'var(--pink-pale)'};border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:11px;font-weight:700;color:${trend>=0?'var(--mint-dark)':'var(--pink-dark)'};margin-bottom:4px">${trend>=0?'📈 Upward Trend':'📉 Downward Trend'}</div>
+        <div style="font-size:13px;color:var(--text-mid)">Revenue ${trend>=0?'grew':'dropped'} by ₹${Math.abs(Math.round(trend)).toLocaleString('en-IN')} over 7 days</div>
+      </div>
+      <div style="background:var(--gold-light);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:11px;font-weight:700;color:#8b6914;margin-bottom:4px">🔮 Next Week Forecast</div>
+        <div style="font-size:13px;color:var(--text-mid)">Predicted: ₹${Math.round(avgRev*7*1.08).toLocaleString('en-IN')}</div>
+      </div>
+    </div>`;
+  // Trend chips
+  const items=top.slice(0,6)||[];
+  document.getElementById('trend-chips').innerHTML=items.map((t,i)=>`<span class="trend-chip ${i%2===0?'trend-up':'trend-dn'}">${i%2===0?'📈':'📉'} ${t.name}</span>`).join('')||'<span style="color:var(--text-soft);font-size:12px">No trend data yet</span>';
+}
+
+// =============================================
+// 5. VOICE ORDERING ASSISTANT
+// =============================================
+let voiceRec=null,voiceActive=false,voiceParsedItems=[];
+
+async function loadVoice(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    document.getElementById('mic-status').textContent='⚠️ Your browser does not support voice input. Try Chrome.';
+    document.getElementById('mic-btn').disabled=true;
+    return;
+  }
+  voiceParsedItems=[];renderVoiceItems();
+}
+
+function toggleVoice(){
+  if(voiceActive){stopVoice();return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  voiceRec=new SR();
+  voiceRec.lang='en-IN';voiceRec.interimResults=true;voiceRec.continuous=false;
+  voiceRec.onstart=()=>{voiceActive=true;document.getElementById('mic-btn').classList.add('listening');document.getElementById('mic-btn').textContent='🔴';document.getElementById('mic-status').textContent='🎙️ Listening... Speak now!';document.getElementById('voice-transcript').textContent='';};
+  voiceRec.onresult=(e)=>{
+    const transcript=Array.from(e.results).map(r=>r[0].transcript).join('');
+    document.getElementById('voice-transcript').textContent=transcript;
+    if(e.results[0].isFinal){parseVoiceOrder(transcript);}
+  };
+  voiceRec.onerror=(e)=>{toast('Voice error: '+e.error,'error');stopVoice();};
+  voiceRec.onend=()=>stopVoice();
+  voiceRec.start();
+}
+
+function stopVoice(){
+  voiceActive=false;
+  if(voiceRec)voiceRec.stop();
+  document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('mic-btn').textContent='🎙️';
+  document.getElementById('mic-status').textContent='Click mic to start listening';
+}
+
+const NUM_WORDS={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,a:1,an:1,couple:2,few:3,half:1};
+
+// Fuzzy match a spoken word/phrase against the live menu
+function fuzzyMatchMenu(spokenText, menuItems){
+  const lower = spokenText.toLowerCase().trim();
+  const results = [];
+  menuItems.forEach(item => {
+    const name = item.name.toLowerCase();
+    const words = name.split(/\s+/);
+    const spokenWords = lower.split(/\s+/);
+    // Exact match
+    if(lower === name){ results.push({item, score:100}); return; }
+    // Contains full name
+    if(lower.includes(name)){ results.push({item, score:90}); return; }
+    // Name contains spoken text (partial: "dal" matches "dal makhani")
+    if(name.includes(lower) && lower.length >= 3){ results.push({item, score:80}); return; }
+    // All spoken words appear in name
+    const spokenInName = spokenWords.filter(w => w.length > 2 && name.includes(w));
+    if(spokenInName.length > 0 && spokenInName.length >= Math.ceil(spokenWords.length * 0.6)){
+      results.push({item, score: 60 + spokenInName.length * 5}); return;
+    }
+    // Any significant spoken word in name (length > 3)
+    const anyMatch = spokenWords.filter(w => w.length > 3 && name.includes(w));
+    if(anyMatch.length > 0){ results.push({item, score: 40 + anyMatch.length * 5}); return; }
+    // Word from name appears in spoken (user said part of it)
+    const nameInSpoken = words.filter(w => w.length > 3 && lower.includes(w));
+    if(nameInSpoken.length > 0){ results.push({item, score: 30 + nameInSpoken.length * 5}); return; }
+  });
+  results.sort((a,b) => b.score - a.score);
+  return results.length > 0 && results[0].score >= 30 ? results[0].item : null;
+}
+
+// Parse quantity from words before item mention
+function extractQty(lower, itemStart){
+  const before = lower.slice(Math.max(0, itemStart - 15), itemStart).trim().split(/\s+/);
+  let qty = 1;
+  before.forEach(w => {
+    if(NUM_WORDS[w]) qty = NUM_WORDS[w];
+    const n = parseInt(w);
+    if(!isNaN(n) && n > 0 && n < 20) qty = n;
+  });
+  return qty;
+}
+
+// Segment spoken text into chunks and try to match each against menu
+function segmentAndMatch(text, menuItems){
+  const lower = text.toLowerCase().replace(/[,\.!?]/g, ' ').replace(/\s+/g, ' ').trim();
+  const found = [];
+  const seen = new Set();
+
+  // Try progressively smaller n-grams (5 words down to 1)
+  for(let n = 5; n >= 1; n--){
+    const words = lower.split(' ');
+    for(let i = 0; i <= words.length - n; i++){
+      const chunk = words.slice(i, i + n).join(' ');
+      // Skip number words alone
+      if(NUM_WORDS[chunk] !== undefined && n === 1) continue;
+      const matched = fuzzyMatchMenu(chunk, menuItems);
+      if(matched && !seen.has(matched.id)){
+        const qty = extractQty(lower, lower.indexOf(chunk));
+        found.push({menuItem: matched, qty, matchedText: chunk});
+        seen.add(matched.id);
+      }
+    }
+  }
+  return found;
+}
+
+async function parseVoiceOrder(text){
+  // Load menu for matching
+  let menuItems=menuAll.length?menuAll:(await GET('/menu/items?available=true')||[]);
+  if(!menuAll.length&&menuItems.length)menuAll=menuItems;
+  const matched=segmentAndMatch(text,menuItems);
+  voiceParsedItems=matched.map(m=>({name:m.menuItem.name,qty:m.qty,id:m.menuItem.id,emoji:MENU_EMOJIS[m.menuItem.name]||MENU_EMOJIS[m.menuItem.category_name]||'🍴'}));
+  renderVoiceItems();
+  if(voiceParsedItems.length>0){
+    document.getElementById('voice-confirm-btn').style.display='inline-flex';
+    toast('Found '+voiceParsedItems.length+' item(s)! 🎉','success');
+  }else{
+    document.getElementById('voice-transcript').textContent=text+' — no menu items recognised. Try speaking more clearly!';
+  }
+}
+
+function renderVoiceItems(){
+  const el=document.getElementById('voice-parsed');
+  if(!voiceParsedItems.length){el.innerHTML='';return;}
+  el.innerHTML=voiceParsedItems.map(it=>`
+    <div class="voice-item-row">
+      <div class="vi-icon">${it.emoji}</div>
+      <div class="vi-name">${it.name}</div>
+      <div class="vi-qty">×${it.qty}</div>
+      <button class="btn btn-outline btn-sm" onclick="removeVoiceItem('${it.name}')">✕</button>
+    </div>`).join('');
+  document.getElementById('voice-actions').style.display='flex';
+}
+
+function removeVoiceItem(name){voiceParsedItems=voiceParsedItems.filter(i=>i.name!==name);renderVoiceItems();if(!voiceParsedItems.length){document.getElementById('voice-confirm-btn').style.display='none';}}
+
+async function confirmVoiceOrder(){
+  if(!voiceParsedItems.length){toast('No items to order','error');return;}
+  // Add to staff cart for ordering
+  toast(`Voice order placed: ${voiceParsedItems.map(i=>i.qty+'× '+i.name).join(', ')}!`,'success');
+  voiceParsedItems=[];renderVoiceItems();
+  document.getElementById('voice-transcript').textContent='Order placed! Speak again to add more.';
+  document.getElementById('voice-confirm-btn').style.display='none';
+}
+
+function clearVoice(){voiceParsedItems=[];renderVoiceItems();document.getElementById('voice-transcript').textContent='Your speech will appear here...';document.getElementById('voice-confirm-btn').style.display='none';}
+
+
+// =============================================
+// CUSTOMER: AI RECOMMENDATIONS
+// =============================================
+async function loadCustAIRec(){
+  const h=new Date().getHours();
+  const slot=h<11?'morning':h<16?'afternoon':h<20?'evening':'night';
+  const labels={'morning':'🌅 Morning Picks','afternoon':'☀️ Afternoon Picks','evening':'🌇 Evening Picks','night':'🌙 Night Picks'};
+  const el=document.getElementById('cust-rec-time-label');
+  if(el)el.textContent=labels[slot];
+  const top=await GET('/reports/top-items');
+  const topItem=(top&&top[0])?top[0].name:'Cold Coffee';
+  const anchor=document.getElementById('cust-rec-anchor');
+  if(anchor)anchor.textContent=topItem;
+  const also=ALSO_ORDERED[topItem]||['Garlic Bread','Brownie','Fries'];
+  const alsoEl=document.getElementById('cust-also-tags');
+  if(alsoEl)alsoEl.innerHTML=also.map(a=>`<div class="also-tag">${MENU_EMOJIS[a]||'🍴'} ${a}</div>`).join('');
+  const timeItems=TIME_RECS[slot]||TIME_RECS.afternoon;
+  const menuItems=custMenuAll.length?custMenuAll:(await GET('/menu/items?available=true')||[]);
+  if(!custMenuAll.length&&menuItems.length)custMenuAll=menuItems;
+  const grid=document.getElementById('cust-rec-grid');
+  if(!grid)return;
+  const recs=timeItems.map(name=>{
+    const found=menuItems.find(m=>m.name&&m.name.toLowerCase().includes(name.toLowerCase()));
+    return found?{...found,matchReason:slot==='morning'?'Perfect for morning':'Popular right now'}:null;
+  }).filter(Boolean).slice(0,6);
+  grid.innerHTML=recs.map((r,i)=>`
+    <div class="rec-card" onclick="addCustRecItem(${r.id},'${r.name.replace(/'/g,"\'")}')" style="cursor:pointer">
+      <div class="rec-badge">${i===0?'⭐ Top Pick':i===1?'🔥 Trending':'💡 Pick'}</div>
+      <div class="rec-icon">${MENU_EMOJIS[r.name]||'🍴'}</div>
+      <div class="rec-name">${r.name}</div>
+      <div class="rec-why">${r.matchReason}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+        <div class="rec-price">₹${parseFloat(r.price).toFixed(0)}</div>
+        <button class="btn btn-mint btn-sm">+ Add</button>
+      </div>
+    </div>`).join('')||'<div style="color:var(--text-soft);font-size:13px;padding:10px">Menu loading... visit Menu tab first.</div>';
+}
+
+function addCustRecItem(id,name){
+  const item=custMenuAll.find(m=>m.id===id);
+  if(!item){toast('Open Menu tab first to load items','info');return;}
+  const existing=cCart.find(c=>c.id===id);
+  if(existing){existing.qty++;}else{cCart.push({...item,qty:1});}
+  updCC();
+  toast(name+' added to cart 🛒','success');
+}
+
+// =============================================
+// CUSTOMER: VOICE ORDER
+// =============================================
+let custVoiceRec=null,custVoiceActive=false,custVoiceParsedItems=[];
+
+function loadCustVoice(){custVoiceParsedItems=[];renderCustVoiceItems();}
+
+function toggleCustVoice(){
+  if(custVoiceActive){stopCustVoice();return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('Voice not supported in this browser. Try Chrome!','error');return;}
+  custVoiceRec=new SR();
+  custVoiceRec.lang='en-IN';custVoiceRec.interimResults=true;custVoiceRec.continuous=false;
+  custVoiceRec.onstart=()=>{custVoiceActive=true;const btn=document.getElementById('cust-mic-btn');if(btn){btn.classList.add('listening');btn.textContent='🔴';}const st=document.getElementById('cust-mic-status');if(st)st.textContent='🎙️ Listening... Speak now!';const tr=document.getElementById('cust-voice-transcript');if(tr)tr.textContent='';};
+  custVoiceRec.onresult=(e)=>{
+    const transcript=Array.from(e.results).map(r=>r[0].transcript).join('');
+    const tr=document.getElementById('cust-voice-transcript');if(tr)tr.textContent=transcript;
+    if(e.results[0].isFinal)parseCustVoiceOrder(transcript);
+  };
+  custVoiceRec.onerror=(e)=>{toast('Voice error: '+e.error,'error');stopCustVoice();};
+  custVoiceRec.onend=()=>stopCustVoice();
+  custVoiceRec.start();
+}
+
+function stopCustVoice(){
+  custVoiceActive=false;
+  if(custVoiceRec)custVoiceRec.stop();
+  const btn=document.getElementById('cust-mic-btn');
+  if(btn){btn.classList.remove('listening');btn.textContent='🎙️';}
+  const st=document.getElementById('cust-mic-status');if(st)st.textContent='Tap mic to speak your order';
+}
+
+async function parseCustVoiceOrder(text){
+  // Use live menu for fuzzy matching — works for ALL items including Indian dishes
+  let menuItems=custMenuAll.length?custMenuAll:(await GET('/menu/items?available=true')||[]);
+  if(!custMenuAll.length&&menuItems.length)custMenuAll=menuItems;
+  const matched=segmentAndMatch(text,menuItems);
+  custVoiceParsedItems=matched.map(m=>({name:m.menuItem.name,qty:m.qty,id:m.menuItem.id,emoji:MENU_EMOJIS[m.menuItem.name]||MENU_EMOJIS[m.menuItem.category_name]||'🍴'}));
+  renderCustVoiceItems();
+  const conf=document.getElementById('cust-voice-confirm');
+  const tr=document.getElementById('cust-voice-transcript');
+  if(custVoiceParsedItems.length>0){
+    if(conf)conf.style.display='inline-flex';
+    toast('Found '+custVoiceParsedItems.length+' item(s)! 🎉','success');
+    if(tr)tr.textContent=text+' ✅ — Found: '+custVoiceParsedItems.map(i=>i.qty+'× '+i.name).join(', ');
+  }else{
+    if(tr)tr.textContent=text+' — no items matched. Try saying the dish name clearly!';
+  }
+}
+
+function renderCustVoiceItems(){
+  const el=document.getElementById('cust-voice-parsed');if(!el)return;
+  if(!custVoiceParsedItems.length){el.innerHTML='';return;}
+  el.innerHTML=custVoiceParsedItems.map(it=>`
+    <div class="voice-item-row">
+      <div class="vi-icon">${it.emoji}</div>
+      <div class="vi-name">${it.name}</div>
+      <div class="vi-qty">×${it.qty}</div>
+      <button class="btn btn-outline btn-sm" onclick="removeCustVoiceItem('${it.name}')">✕</button>
+    </div>`).join('');
+}
+
+function removeCustVoiceItem(name){
+  custVoiceParsedItems=custVoiceParsedItems.filter(i=>i.name!==name);
+  renderCustVoiceItems();
+  if(!custVoiceParsedItems.length){const conf=document.getElementById('cust-voice-confirm');if(conf)conf.style.display='none';}
+}
+
+async function confirmCustVoiceOrder(){
+  if(!custVoiceParsedItems.length){toast('No items!','error');return;}
+  const menuItems=custMenuAll.length?custMenuAll:(await GET('/menu/items?available=true')||[]);
+  if(!custMenuAll.length&&menuItems.length)custMenuAll=menuItems;
+  let added=0;
+  custVoiceParsedItems.forEach(vi=>{
+    // Use id if available (from fuzzy match), otherwise fallback to name search
+    const found=vi.id?menuItems.find(m=>m.id===vi.id):menuItems.find(m=>m.name&&m.name.toLowerCase().includes(vi.name.toLowerCase()));
+    if(found){
+      const existing=cCart.find(c=>c.id===found.id);
+      if(existing){existing.qty+=vi.qty;}
+      else{cCart.push({id:found.id,name:found.name,price:parseFloat(found.price),qty:vi.qty,emoji:MENU_EMOJIS[found.name]||MENU_EMOJIS[found.category_name]||'🍴'});}
+      added++;
+    }
+  });
+  updCC();
+  if(added>0){
+    toast(added+' item(s) added to cart! 🛒 ✨','success');
+    custVoiceParsedItems=[];renderCustVoiceItems();
+    const conf=document.getElementById('cust-voice-confirm');if(conf)conf.style.display='none';
+    const tr=document.getElementById('cust-voice-transcript');if(tr)tr.textContent='✅ Added to cart! Open cart to review & pay 🛒';
+  }else toast('Could not add items — please try again','error');
+}
+
+function clearCustVoice(){
+  custVoiceParsedItems=[];renderCustVoiceItems();
+  const tr=document.getElementById('cust-voice-transcript');if(tr)tr.textContent='Your speech will appear here...';
+  const conf=document.getElementById('cust-voice-confirm');if(conf)conf.style.display='none';
+}
+
+// =============================================
+// CUSTOMER: QR CODE DEMO
+// =============================================
+function getCustQRBase(){
+  const ipInput=document.getElementById('qr-ip-input');
+  const ip=ipInput?ipInput.value.trim():'';
+  if(ip){
+    const port=window.location.port||'5000';
+    return 'http://'+ip+':'+port;
+  }
+  return window.location.origin;
+}
+
+function loadCustQR(){
+  const canvas=document.getElementById('cust-qr-demo');
+  if(canvas&&typeof drawQR==='function'){
+    const base=getCustQRBase();
+    const url=base+'/order?table=demo&scan=customer';
+    drawQR(canvas,url);
+    const disp=document.getElementById('cust-qr-url-display');
+    if(disp)disp.textContent=url;
+  }
+}
+
+function updateCustQR(){
+  const canvas=document.getElementById('cust-qr-demo');
+  if(canvas&&typeof drawQR==='function'){
+    const base=getCustQRBase();
+    const url=base+'/order?table=demo&scan=customer';
+    // Clear old QR
+    const ctx=canvas.getContext('2d');
+    if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);
+    const wrap=canvas.parentElement;
+    const oldQRDiv=wrap.querySelector('div[id^="_qr"]');
+    if(oldQRDiv)oldQRDiv.remove();
+    // Remove cached instance
+    if(window._qrInstances&&window._qrInstances['cust-qr-demo'])
+      delete window._qrInstances['cust-qr-demo'];
+    drawQR(canvas,url);
+    const disp=document.getElementById('cust-qr-url-display');
+    if(disp)disp.textContent=url;
+    toast('QR updated! Now scan with your phone 📱','success');
+  }
+}
+
+
+
+// =======================================================
+// FEATURE 1: LOYALTY & REWARDS
+// =======================================================
+let loyaltyAccount = null;
+const TIERS = [
+  {name:'Silver',  min:0,    cashback:'2%',  discount:'0%',   color:'#9e9e9e', icon:'🥈'},
+  {name:'Gold',    min:500,  cashback:'5%',  discount:'5%',   color:'#d4a843', icon:'🥇'},
+  {name:'Platinum',min:2000, cashback:'10%', discount:'10%',  color:'#7b68ee', icon:'💎'},
+];
+function getTierInfo(pts){return [...TIERS].reverse().find(t=>pts>=t.min)||TIERS[0];}
+
+async function loadLoyaltyProfile(){
+  if(!user||user.role!=='customer')return;
+  const data=await GET('/loyalty/profile');
+  if(!data)return;
+  loyaltyAccount=data.account;
+  const t=getTierInfo(data.account.total_points);
+  const avail=data.account.available_points||0;
+  const total=data.account.total_points||0;
+  const spent=data.account.total_spent||0;
+  const redeemed=data.account.redeemed_points||0;
+
+  const badge=document.getElementById('loyalty-tier-badge');
+  if(badge){badge.textContent=t.icon+' '+t.name+' Member';badge.style.background=t.color+'22';badge.style.color=t.color;}
+  const pdisp=document.getElementById('loyalty-pts-display');
+  if(pdisp)pdisp.textContent=avail.toLocaleString();
+
+  // Progress bar
+  const nextTier=TIERS.find(x=>x.min>total);
+  const prevMin=t.min;
+  const nextMin=nextTier?nextTier.min:total;
+  const prog=nextTier?Math.min(100,Math.round(((total-prevMin)/(nextMin-prevMin))*100)):100;
+  const bar=document.getElementById('loy-prog-bar');
+  if(bar)bar.style.width=prog+'%';
+  const ptsNext=document.getElementById('loy-pts-to-next');
+  if(ptsNext)ptsNext.textContent=nextTier?(nextMin-total)+' pts to '+nextTier.name:'Platinum achieved! 🎉';
+  const tierCur=document.getElementById('loy-tier-cur');
+  if(tierCur)tierCur.textContent=t.name;
+  const tierNext=document.getElementById('loy-tier-next');
+  if(tierNext)tierNext.textContent=nextTier?nextTier.name+' ('+nextTier.min+' pts)':'MAX';
+
+  // Stats
+  const tp=document.getElementById('loy-total-pts-cust');if(tp)tp.textContent=total.toLocaleString();
+  const rd=document.getElementById('loy-redeemed-cust');if(rd)rd.textContent=redeemed.toLocaleString();
+  const sp=document.getElementById('loy-spent-cust');if(sp)sp.textContent='₹'+(parseFloat(spent)||0).toFixed(0);
+
+  // Benefits
+  const benList=document.getElementById('loyalty-benefits-list');
+  if(benList) benList.innerHTML=`✅ ${t.cashback} cashback on every order<br>${t.discount!=='0%'?'✅ '+t.discount+' discount on orders<br>':''}${t.name==='Gold'?'✅ Priority seating<br>':''}${t.name==='Platinum'?'✅ Free birthday dessert<br>✅ Exclusive events access<br>':''}✅ Points never expire`;
+
+  // Load coupons & history
+  loadCustCoupons();
+  loadLoyaltyHistory();
+}
+
+async function loadCustCoupons(){
+  const coupons=await GET('/loyalty/coupons/available');
+  const el=document.getElementById('cust-coupons-list');
+  if(!el)return;
+  if(!coupons||!coupons.length){el.innerHTML='<div style="color:var(--text-soft);font-size:12px;text-align:center;padding:10px">No coupons available right now.</div>';return;}
+  el.innerHTML=coupons.map(c=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--mint-pale);border:1.5px dashed var(--mint);border-radius:var(--radius-sm);padding:12px">
+      <div>
+        <div style="font-weight:700;font-size:14px;color:var(--mint-dark);font-family:monospace">${c.code}</div>
+        <div style="font-size:11px;color:var(--text-soft)">${c.description}</div>
+        <div style="font-size:10px;color:var(--text-soft)">${c.type==='percent'?c.value+'% off':'₹'+c.value+' off'}${c.min_order>0?' · Min ₹'+c.min_order:''}</div>
+      </div>
+      <button class="btn btn-mint btn-sm" onclick="copyCoupon('${c.code}')">Copy</button>
+    </div>`).join('');
+}
+
+function copyCoupon(code){navigator.clipboard.writeText(code).then(()=>toast('Coupon code "'+code+'" copied! 🎟️','success'));}
+
+async function loadLoyaltyHistory(){
+  const hist=await GET('/loyalty/history');
+  const el=document.getElementById('cust-loyalty-history');
+  if(!el)return;
+  if(!hist||!hist.length){el.innerHTML='<div style="color:var(--text-soft);text-align:center;padding:10px">No transactions yet.</div>';return;}
+  el.innerHTML=hist.map(h=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+    <span>${h.description}</span>
+    <span style="font-weight:700;color:${h.points>0?'var(--mint-dark)':'var(--pink-dark)'}">${h.points>0?'+'+h.points:h.points} pts</span>
+  </div>`).join('');
+}
+
+// Admin coupon management
+async function loadAdminLoyalty(){
+  const coupons=await GET('/loyalty/coupons');
+  const tbody=document.getElementById('coupons-tbody');
+  if(!tbody)return;
+  if(!coupons||!coupons.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-soft)">No coupons yet.</td></tr>';return;}
+  tbody.innerHTML=coupons.map(c=>`<tr>
+    <td><strong style="font-family:monospace">${c.code}</strong></td>
+    <td><span class="badge">${c.type}</span></td>
+    <td>${c.type==='percent'?c.value+'%':'₹'+c.value}</td>
+    <td>₹${c.min_order}</td>
+    <td>${c.used_count}/${c.max_uses}</td>
+    <td style="font-size:11px">${c.expires_at?new Date(c.expires_at).toLocaleDateString('en-IN'):'Never'}</td>
+    <td><span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${c.is_active?'var(--mint-light)':'var(--pink-light)'};color:${c.is_active?'var(--mint-dark)':'var(--pink-dark)'}">${c.is_active?'Active':'Inactive'}</span></td>
+  </tr>`).join('');
+  // Update coupon count stat
+  const el=document.getElementById('loy-coupons');
+  if(el)el.textContent=coupons.filter(c=>c.is_active).length;
+}
+
+function openCouponModal(){
+  const code=prompt('Coupon code (e.g. SUMMER25):');if(!code)return;
+  const type=prompt('Type (percent / flat):','percent');if(!type)return;
+  const value=parseFloat(prompt('Value (e.g. 20 for 20% or ₹20):','10'));if(isNaN(value))return;
+  const minOrder=parseFloat(prompt('Minimum order amount (0 for none):','0'))||0;
+  const desc=prompt('Description:','Special offer')||'';
+  POST('/loyalty/coupons',{code,type,value,min_order:minOrder,description:desc}).then(r=>{
+    if(r&&r.message==='Coupon created'){toast('Coupon created! 🎟️','success');loadAdminLoyalty();}
+    else toast(r?.message||'Error','error');
+  });
+}
+
+// =======================================================
+// FEATURE 2: SMART WAITER CALLING SYSTEM
+// =======================================================
+let waiterCallHistory = [];
+let waiterCallsInterval = null;
+
+function sendWaiterCall(type){
+  const tableNum = user?.table_number || prompt('Your table number (e.g. T03):','T01') || 'T?';
+  const labels={water:'💧 Water',waiter:'🙋 Waiter',bill:'🧾 Bill'};
+  fetch(API+'/waiter-calls',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({table_number:tableNum,call_type:type})})
+    .then(r=>r.json()).then(data=>{
+      const statusEl=document.getElementById('waiter-call-status');
+      if(statusEl){statusEl.style.display='block';statusEl.textContent='✅ '+labels[type]+' request sent! Waiter will be with you shortly.';}
+      const ts=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+      waiterCallHistory.unshift({type,label:labels[type],time:ts,table:tableNum});
+      renderWaiterCallHistory();
+      toast(labels[type]+' request sent! 🔔','success');
+      setTimeout(()=>{if(statusEl)statusEl.style.display='none';},5000);
+    }).catch(()=>toast('Could not send request. Please flag a staff member.','error'));
+}
+
+function renderWaiterCallHistory(){
+  const el=document.getElementById('waiter-call-history');
+  if(!el)return;
+  if(!waiterCallHistory.length){el.textContent='No calls yet this session.';return;}
+  el.innerHTML=waiterCallHistory.map(c=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>${c.label} — Table ${c.table}</span><span style="color:var(--text-soft)">${c.time}</span></div>`).join('');
+}
+
+async function loadWaiterCalls(){
+  const calls=await GET('/waiter-calls');
+  const grid=document.getElementById('wd-calls-grid');
+  if(!grid)return;
+  if(!calls||!calls.length){
+    grid.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-soft);grid-column:1/-1">No active calls right now ✅</div>';
+    document.getElementById('wd-count').textContent='0 pending';
+    return;
+  }
+  const pending=calls.filter(c=>c.status==='pending');
+  const acked=calls.filter(c=>c.status==='acknowledged');
+  document.getElementById('wd-count').textContent=pending.length+' pending';
+  // Update stat counters
+  const water=calls.filter(c=>c.call_type==='water').length;
+  const waiter=calls.filter(c=>c.call_type==='waiter').length;
+  const bill=calls.filter(c=>c.call_type==='bill').length;
+  const wc=document.getElementById('wd-water-count');if(wc)wc.textContent=water;
+  const wai=document.getElementById('wd-waiter-count');if(wai)wai.textContent=waiter;
+  const bil=document.getElementById('wd-bill-count');if(bil)bil.textContent=bill;
+  const typeLabels={water:'💧 Water',waiter:'🙋 Waiter',bill:'🧾 Bill'};
+  const typeColors={water:'#1565c0',waiter:'var(--mint-dark)',bill:'#e65100'};
+  grid.innerHTML=calls.map(c=>`
+    <div style="background:${c.status==='acknowledged'?'var(--mint-pale)':'var(--white)'};border:2px solid ${c.status==='pending'?'var(--pink)':'var(--mint)'};border-radius:var(--radius);padding:16px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:20px">${typeLabels[c.call_type]||'❓ '+c.call_type}</span>
+        <span style="font-size:10px;padding:3px 8px;border-radius:12px;background:${c.status==='pending'?'var(--pink-light)':'var(--mint-light)'};color:${c.status==='pending'?'var(--pink-dark)':'var(--mint-dark)'}">${c.status}</span>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--text-dark)">Table ${c.table_number}</div>
+      <div style="font-size:11px;color:var(--text-soft);margin-top:3px">${new Date(c.created_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        ${c.status==='pending'?`<button class="btn btn-mint btn-sm" onclick="ackCall(${c.id})">Acknowledge</button>`:''}
+        <button class="btn btn-outline btn-sm" onclick="resolveCall(${c.id})">Resolve ✅</button>
+      </div>
+    </div>`).join('');
+}
+
+async function ackCall(id){
+  await PUT('/waiter-calls/'+id+'/acknowledge',{});
+  loadWaiterCalls();
+  toast('Call acknowledged!','success');
+}
+async function resolveCall(id){
+  await PUT('/waiter-calls/'+id+'/resolve',{});
+  loadWaiterCalls();
+  toast('Call resolved! ✅','success');
+  // Increment resolved count
+  const el=document.getElementById('wd-resolved-count');if(el)el.textContent=parseInt(el.textContent||0)+1;
+}
+
+// =======================================================
+// FEATURE 3: CHATBOT
+// =======================================================
+let chatbotHistory = [];
+let chatbotTyping = false;
+
+function addChatBubble(text, isBot){
+  const wrap=document.getElementById('chatbot-messages');
+  if(!wrap)return;
+  const div=document.createElement('div');
+  div.className='chat-bubble '+(isBot?'bot-bubble':'user-bubble');
+  if(isBot){div.innerHTML='<span style="font-size:14px;margin-right:6px">☕</span>'+text;}
+  else{div.textContent=text;}
+  wrap.appendChild(div);
+  wrap.scrollTop=wrap.scrollHeight;
+}
+
+// Smart local chatbot — works without API key
+function getRoyalReply(msg){
+  const m=msg.toLowerCase();
+  // timings / hours
+  if(m.match(/time|hour|open|close|timing|when/))
+    return "We're open every day, <strong>8 AM – 11 PM</strong> 🕗<br>We'd love to see you!";
+  // wifi
+  if(m.match(/wifi|wi-fi|password|internet/))
+    return "📶 WiFi Password: <strong>RoyalCafe@2024</strong><br>Enjoy browsing! 😊";
+  // veg / vegetarian
+  if(m.match(/veg(etarian)?|plant|no meat/))
+    return "🌱 We have plenty of veg options! Try our <strong>Paneer Tikka, Veg Biryani, Masala Dosa</strong> and more. Want me to suggest a full veg meal?";
+  // non-veg
+  if(m.match(/non.?veg|chicken|mutton|fish|seafood|meat/))
+    return "🍗 Great choice! Popular non-veg picks: <strong>Chicken Biryani, Butter Chicken, Chicken Tikka</strong>. Want a full recommendation?";
+  // coffee / beverages
+  if(m.match(/coffee|cappuccino|latte|espresso|tea|drink|beverage/))
+    return "☕ Our top beverages: <strong>Royal Cappuccino, Filter Coffee, Masala Chai</strong> — all freshly brewed! Which sounds good?";
+  // dessert / sweet
+  if(m.match(/dessert|sweet|cake|ice cream|gulab|kheer|halwa/))
+    return "🍮 Our desserts are heavenly! Try the <strong>Gulab Jamun, Chocolate Brownie,</strong> or our <strong>Royal Kheer</strong>. Perfect way to end your meal! 😋";
+  // starter / appetizer
+  if(m.match(/starter|appetizer|snack|begin|start/))
+    return "🍢 For starters, we recommend: <strong>Paneer Tikka, Veg Manchurian, Chicken 65</strong> — all crowd favourites!";
+  // main course
+  if(m.match(/main|biryani|curry|rice|roti|naan|bread/))
+    return "🍛 Our mains are amazing! Popular choices: <strong>Butter Chicken with Naan, Veg Biryani, Dal Makhani with Rice</strong>. Want a full meal combo?";
+  // spicy
+  if(m.match(/spic(y|e)|mild|hot/))
+    return "🌶️ We cater to all spice levels! Just tell your waiter your preference — mild, medium, or extra spicy — and we'll adjust. What would you like to order?";
+  // price / cost / cheap / budget
+  if(m.match(/price|cost|cheap|expensive|budget|how much|rate/))
+    return "💰 Our menu starts from <strong>₹80 for beverages</strong> and <strong>₹120 for starters</strong>. Main courses are ₹180–₹320. We believe in great value for quality food! 🌟";
+  // reservation / booking / table
+  if(m.match(/reserv|book|table|seat/))
+    return "📅 To reserve a table, head to the <strong>Reserve tab</strong> above, or call us at <strong>+91 98765 43210</strong>. We recommend booking in advance on weekends! 🌸";
+  // order / how to order
+  if(m.match(/order|how to|place|buy|add to cart/))
+    return "🛒 Ordering is easy! Go to the <strong>Menu tab</strong>, browse items, tap <strong>Add to Cart</strong>, then hit <strong>Place Order & Pay</strong>. Your order reaches the kitchen instantly! ✨";
+  // order status / track
+  if(m.match(/status|track|where.*order|my order/))
+    return "📋 Check the <strong>My Orders tab</strong> for live order tracking — you'll see real-time status from confirmed → preparing → ready → served! 🔥";
+  // waiter / help / staff / call
+  if(m.match(/waiter|staff|help|call|attention|service/))
+    return "🔔 Need assistance? Use the <strong>Call Staff tab</strong> to alert your waiter for water, service, or the bill — they'll be with you in a moment! 😊";
+  // parking
+  if(m.match(/park(ing)?/))
+    return "🅿️ Yes, we have <strong>free basement parking</strong> available for all our guests!";
+  // music / entertainment / live
+  if(m.match(/music|live|entertainment|performance/))
+    return "🎵 We have <strong>Live Music every Friday & Saturday evening</strong> — a perfect date night! Come enjoy great food and great vibes 🎶";
+  // location / address / where
+  if(m.match(/location|address|where|find you|direction/))
+    return "📍 We're at: <strong>Royal Café, Main Street, Chennai</strong><br>📞 +91 98765 43210<br>Easy to find — right in the heart of the city! 🌆";
+  // phone / contact
+  if(m.match(/phone|contact|number|call you/))
+    return "📞 You can reach us at <strong>+91 98765 43210</strong> — we're available during café hours (8 AM – 11 PM)!";
+  // recommend / suggest / best
+  if(m.match(/recommend|suggest|best|popular|must.?try|favourite/))
+    return "⭐ Our <strong>most popular dishes</strong>:<br>🍗 Chicken Biryani<br>🧀 Paneer Tikka<br>☕ Royal Cappuccino<br>🍮 Gulab Jamun<br><br>All tried-and-loved by our regulars! Want details on any of these?";
+  // greeting
+  if(m.match(/^(hi|hello|hey|good|namaste|hola|howdy)/))
+    return "Hi there! 🌸 Welcome to Royal Café! I'm <strong>Royal</strong>, your café assistant.<br>How can I make your visit special today?";
+  // thanks
+  if(m.match(/thank|thanks|great|awesome|perfect|wonderful/))
+    return "You're so welcome! 🌟 Enjoy your time at Royal Café — if you need anything else, just ask! ☕🌸";
+  // bye
+  if(m.match(/bye|goodbye|see you|cya|take care/))
+    return "Goodbye! 👋 Thank you for visiting Royal Café — hope to see you again soon! 🌸☕";
+  // default
+  return "I'd love to help! 🌸 I can assist with:<br>🍽️ Menu & recommendations<br>📅 Reservations<br>🕗 Café timings & info<br>📋 Order tracking<br><br>What would you like to know?";
+}
+
+async function sendChatbotMsg(){
+  const input=document.getElementById('chatbot-input');
+  if(!input||!input.value.trim())return;
+  const msg=input.value.trim();
+  input.value='';
+  addChatBubble(msg,false);
+  chatbotHistory.push({role:'user',content:msg});
+  // Typing indicator
+  const wrap=document.getElementById('chatbot-messages');
+  const typing=document.createElement('div');
+  typing.className='chat-bubble bot-bubble';
+  typing.id='chatbot-typing';
+  typing.innerHTML='<span style="opacity:0.6">☕ Thinking...</span>';
+  wrap.appendChild(typing);
+  wrap.scrollTop=wrap.scrollHeight;
+  // Try backend (works if ANTHROPIC_API_KEY is set), else use local smart reply
+  try{
+    const res=await fetch(API+'/chatbot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatbotHistory,table_number:user?.table_number||null})});
+    const data=await res.json();
+    typing.remove();
+    // If backend returned a fallback (no API key), use our smart local reply instead
+    const reply = data.fallback ? getRoyalReply(msg) : (data.reply||getRoyalReply(msg));
+    addChatBubble(reply,true);
+    chatbotHistory.push({role:'assistant',content:reply});
+    if(chatbotHistory.length>20)chatbotHistory=chatbotHistory.slice(-20);
+  }catch(e){
+    typing.remove();
+    const reply=getRoyalReply(msg);
+    addChatBubble(reply,true);
+    chatbotHistory.push({role:'assistant',content:reply});
+  }
+}
+
+function quickChat(msg){
+  const input=document.getElementById('chatbot-input');
+  if(input){input.value=msg;sendChatbotMsg();}
+}
+
+// =======================================================
+// OVERRIDE nav() to handle new pages
+// =======================================================
+const _origNav = typeof nav === 'function' ? nav : null;
+function nav(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  const pg=document.getElementById('pg-'+p);
+  if(pg)pg.classList.add('active');
+  const ni=document.querySelector('.nav-item[onclick*="\''+p+'\'"]');if(ni)ni.classList.add('active');
+  curPage=p;
+  if(p==='loyalty-admin')loadAdminLoyalty();
+  if(p==='waiter-dashboard'){loadWaiterCalls();if(!waiterCallsInterval)waiterCallsInterval=setInterval(loadWaiterCalls,15000);}
+  else{if(waiterCallsInterval){clearInterval(waiterCallsInterval);waiterCallsInterval=null;}}
+}
+
+// Override showCS to load loyalty
+const _origShowCS = typeof showCS === 'function' ? showCS : null;
+function showCS(n){
+  document.querySelectorAll('.csec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));
+  const el=document.getElementById(n);if(el)el.classList.add('active');
+  const tab=document.getElementById('ct-'+n);if(tab)tab.classList.add('active');
+  if(n==='c-orders')loadCustOrders();
+  if(n==='c-ai-rec')loadCustAIRec();
+  if(n==='c-voice')loadCustVoice();
+  if(n==='c-qr')loadCustQR();
+  if(n==='c-loyalty')loadLoyaltyProfile();
+  if(n==='c-chatbot'){/* already loaded */}
+}
+
+// Socket.io — join waiter dashboard room when on that page
+if(typeof io !== 'undefined'){
+  const sock = io();
+  sock.on('connect',()=>{
+    sock.emit('join_waiter_dashboard');
+    sock.emit('join_room','admin');
+    const badge=document.getElementById('wd-conn-badge');
+    if(badge){badge.textContent='● Live';badge.style.background='var(--mint-light)';badge.style.color='var(--mint-dark)';}
+  });
+  sock.on('waiter_call',(call)=>{
+    if(curPage==='waiter-dashboard')loadWaiterCalls();
+    // Show toast notification
+    const labels={water:'💧 Water needed',waiter:'🙋 Waiter needed',bill:'🧾 Bill requested'};
+    toast((labels[call.call_type]||'🔔 Call') + ' — Table '+call.table_number,'info');
+  });
+  sock.on('call_acknowledged',()=>{if(curPage==='waiter-dashboard')loadWaiterCalls();});
+  sock.on('call_resolved',()=>{if(curPage==='waiter-dashboard')loadWaiterCalls();});
+}
+
+// Add PUT helper if not exists
+if(typeof PUT==='undefined'){
+  window.PUT=async function(path,body){
+    try{const r=await fetch(API+path,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':token?'Bearer '+token:''},body:JSON.stringify(body)});return await r.json();}
+    catch(e){return null;}
+  };
+}
+
+// Waiter call button style (add to head if missing)
+(function(){
+  const s=document.createElement('style');
+  s.textContent=`.waiter-call-btn{padding:20px 16px;border-radius:var(--radius);cursor:pointer;text-align:center;transition:all 0.2s;font-family:var(--sans);width:100%}.waiter-call-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.12)}.waiter-call-btn:active{transform:translateY(0)}.chat-bubble{padding:12px 14px;border-radius:16px;max-width:80%;font-size:13px;line-height:1.5}.bot-bubble{background:var(--white);border:1px solid var(--border);align-self:flex-start}.user-bubble{background:linear-gradient(135deg,var(--mint-dark),var(--mint-deep));color:white;align-self:flex-end;margin-left:auto}`;
+  document.head.appendChild(s);
+})();
+
+</script>
+</body>
+</html>
